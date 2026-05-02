@@ -1,0 +1,26 @@
+{
+  "name": "conventional-commits",
+  "version": "1.0.0",
+  "description": "Skills for planning, writing, validating, and executing Conventional Commits.",
+  "author": {
+    "name": "Alex Baker"
+  },
+  "homepage": "https://github.com/0xA3B/codex-plugins/blob/main/plugins/conventional-commits/README.md",
+  "repository": "https://github.com/0xA3B/codex-plugins",
+  "keywords": ["commits", "git", "conventional-commits"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Conventional Commits",
+    "shortDescription": "Plan and write Conventional Commit messages.",
+    "longDescription": "Reusable skills for splitting changes, drafting Conventional Commit messages, and running a minimal commit workflow.",
+    "developerName": "Alex Baker",
+    "category": "Productivity",
+    "capabilities": ["Write"],
+    "defaultPrompt": [
+      "Use $conventional-commits:draft-message to draft a Conventional Commit message for my changes.",
+      "Use $conventional-commits:commit to commit the current work using Conventional Commits.",
+      "Split my current changes into logical conventional commits.",
+      "Commit the current work using Conventional Commits."
+    ]
+  }
+}

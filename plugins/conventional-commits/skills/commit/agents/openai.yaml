@@ -1,0 +1,7 @@
+version: 1
+interface:
+  display_name: "Commit"
+  short_description: "Create Conventional Commit commits"
+  default_prompt: "Use $conventional-commits:commit to commit the current changes."
+policy:
+  allow_implicit_invocation: false

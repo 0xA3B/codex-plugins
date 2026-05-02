@@ -1,0 +1,110 @@
+---
+name: commit
+description:
+  Reviews current git changes, splits them into logical Conventional Commits, and executes them with
+  minimal interaction. Use when the user asks to commit current work, batch commits, or run a fast
+  commit workflow.
+---
+
+# Commit
+
+User-invoked workflow skill for committing current repository changes quickly and consistently. This
+skill owns git state inspection, commit partitioning, staging, and commit execution. It does not own
+Conventional Commit policy. `conventional-commits:writing-conventional-commits` is the model-invoked
+authority for message structure, type and scope guidance, split heuristics, and validation rules.
+
+Use this skill when the user wants commits created. Use `conventional-commits:draft-message` when
+the user wants commit message text without staging or committing.
+
+## Invocation Behavior
+
+- This skill is user-invoked only (`allow_implicit_invocation: false`).
+- Default behavior is execution mode: review all current changes and commit them.
+- It uses `conventional-commits:writing-conventional-commits` as the authoritative commit format and
+  split policy.
+- If the repository has documented commit conventions beyond Conventional Commits, follow them.
+
+## Delegation Boundaries
+
+- This skill MUST handle:
+  - Git state inspection
+  - Staging and commit execution order
+  - Splitting changed files or hunks into commit units
+  - User-facing override interpretation such as dry runs or path restrictions
+- This skill MUST delegate to `conventional-commits:writing-conventional-commits` for:
+  - Commit header, body, and footer construction
+  - Type and scope selection guidance
+  - Breaking-change formatting guidance
+
+## Commit Message Source
+
+- Commit headers, bodies, and footers MUST come from
+  `conventional-commits:writing-conventional-commits`.
+- This skill MUST NOT introduce conflicting formatting, type, or scope rules of its own.
+- Repository-specific commit rules discovered during the workflow override the default profile from
+  `conventional-commits:writing-conventional-commits`.
+
+## Default Workflow (No Extra Context)
+
+1. Inspect all changes:
+   - Staged changes
+   - Unstaged tracked changes
+   - Untracked files (excluding ignored files)
+2. Build a commit plan:
+   - Split work into logical units by purpose
+   - For each unit, delegate type, scope, and breaking-change guidance to
+     `conventional-commits:writing-conventional-commits`
+3. Execute commits in dependency order:
+   - Stage and commit the unit with elevated sandbox permissions per repository policy.
+   - Repeat until all intended changes are committed
+4. Return a concise summary of created commits.
+
+## Minimal-Interaction Policy
+
+- MUST proceed without questions when intent is clear.
+- MUST treat "run commit" with no extra context as "commit all current changes."
+- MAY ask one short blocking question only when safe execution is impossible:
+  - merge conflicts/rebase in progress
+  - ambiguous overlapping hunks that cannot be safely split
+  - empty working tree
+
+## Commit Partitioning Rules
+
+Split commits when units differ by:
+
+- Conventional Commit type (`feat` vs `fix`, etc.)
+- scope (`api` vs `ui`, etc.)
+- rollback boundary (one unit can be reverted independently)
+
+Keep together when changes are jointly required for one behavior and should be reverted together.
+
+## Type and Scope Heuristics
+
+Use these defaults only when the repository does not already define a preferred vocabulary.
+
+Type mapping:
+
+- `feat`: new user-visible capability
+- `fix`: bug or correctness issue
+- `refactor`: internal structure change without behavior change
+- `docs`, `test`, `perf`, `build`, `ci`, `chore`, `revert`: use when they best match intent
+
+Scope mapping (prefer intent-based short nouns):
+
+- `api`, `ui`, `cli`, `auth`, `data`, `db`, `test`, `tooling`, `deps`, `ci`, `build`
+- Omit scope for truly cross-cutting changes
+
+## Optional Overrides
+
+If user provides extra context, apply it without switching to high-interaction mode:
+
+- "dry run" -> produce commit plan and messages only; do not commit
+- "single commit" -> force one commit when valid
+- "only <path or concern>" -> restrict commit scope
+- "skip <path or concern>" -> exclude specified scope
+
+## Safety Rules
+
+- MUST NOT use `git commit --no-verify` unless explicitly requested.
+- MUST NOT include ignored/local artifact paths unless explicitly requested.
+- MUST stop and report if conflicts prevent safe commit execution.

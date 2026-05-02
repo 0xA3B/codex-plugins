@@ -1,0 +1,20 @@
+{
+  "name": "0xa3b-marketplace",
+  "interface": {
+    "displayName": "0xA3B Marketplace"
+  },
+  "plugins": [
+    {
+      "name": "conventional-commits",
+      "source": {
+        "source": "local",
+        "path": "./plugins/conventional-commits"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

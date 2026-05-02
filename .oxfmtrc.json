@@ -9,6 +9,7 @@
   "sortImports": true,
   "proseWrap": "always",
   "insertFinalNewline": true,
+  "endOfLine": "lf",
   "sortPackageJson": {
     "sortScripts": true
   },

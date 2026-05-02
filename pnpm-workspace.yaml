@@ -1,0 +1,3 @@
+cacheDir: .cache/pnpm/cache
+stateDir: .cache/pnpm/state
+storeDir: .cache/pnpm/store

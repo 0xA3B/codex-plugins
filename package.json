@@ -1,5 +1,5 @@
 {
-  "name": "0xa3b-marketplace",
+  "name": "codex-plugins",
   "private": true,
   "scripts": {
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm validate:plugins",

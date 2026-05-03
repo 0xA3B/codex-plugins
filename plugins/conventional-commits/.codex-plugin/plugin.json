@@ -16,6 +16,8 @@
     "developerName": "Alex Baker",
     "category": "Productivity",
     "capabilities": ["Write"],
+    "composerIcon": "./assets/logo.png",
+    "logo": "./assets/logo.png",
     "defaultPrompt": [
       "Use $conventional-commits:draft-message to draft a Conventional Commit message for my changes.",
       "Use $conventional-commits:commit to commit the current work using Conventional Commits.",

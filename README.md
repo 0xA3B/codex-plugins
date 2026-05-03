@@ -66,6 +66,23 @@ Skills for planning, writing, validating, and executing Conventional Commits.
 - `conventional-commits:commit`: Reviews current changes, stages logical units, and creates
   Conventional Commit commits.
 
+### `engineering-workflows`
+
+Codex-adapted engineering workflow skills for diagnosis, TDD, planning interviews, architecture
+review, and codebase orientation. These are adapted from Matt Pocock's MIT-licensed
+[`mattpocock/skills`](https://github.com/mattpocock/skills) repository with source attribution
+preserved in each skill's Agent Skills frontmatter metadata.
+
+- `engineering-workflows:diagnose`: Runs a disciplined diagnosis loop for bugs, flaky behavior, and
+  performance regressions.
+- `engineering-workflows:tdd`: Builds features or fixes with a red-green-refactor loop.
+- `engineering-workflows:grill-me`: Stress-tests a plan or design through focused questions.
+- `engineering-workflows:grill-with-docs`: Stress-tests a plan while preserving durable domain terms
+  and ADRs.
+- `engineering-workflows:zoom-out`: Maps an unfamiliar code area at a higher level of abstraction.
+- `engineering-workflows:improve-codebase-architecture`: Finds module deepening and architecture
+  improvement opportunities.
+
 ## Adding Skills
 
 Add new skills under the relevant plugin:

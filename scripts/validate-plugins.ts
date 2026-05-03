@@ -54,6 +54,21 @@ function getBoolean(parent: JsonObject, key: string, filePath: string): boolean 
   return value;
 }
 
+function getOptionalString(parent: JsonObject, key: string, filePath: string): string | undefined {
+  const value = parent[key];
+
+  if (value === undefined) {
+    return undefined;
+  }
+
+  if (typeof value !== "string" || value.length === 0) {
+    fail(filePath, `Expected "${key}" to be a non-empty string when provided.`);
+    return undefined;
+  }
+
+  return value;
+}
+
 async function pathExists(filePath: string): Promise<boolean> {
   try {
     await stat(filePath);
@@ -304,10 +319,54 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
   }
 
   const name = getString(parsed, "name", skillFilePath);
-  getString(parsed, "description", skillFilePath);
+  const description = getString(parsed, "description", skillFilePath);
+  const license = getOptionalString(parsed, "license", skillFilePath);
+  const compatibility = getOptionalString(parsed, "compatibility", skillFilePath);
+  getOptionalString(parsed, "allowed-tools", skillFilePath);
 
   if (name !== undefined && name !== skillName) {
     fail(skillFilePath, `Frontmatter name "${name}" does not match directory "${skillName}".`);
+  }
+
+  if (name !== undefined && !/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(name)) {
+    fail(skillFilePath, 'Frontmatter "name" must be 1-64 lowercase letters, numbers, or hyphens.');
+  }
+
+  if (name !== undefined && name.includes("--")) {
+    fail(skillFilePath, 'Frontmatter "name" must not contain consecutive hyphens.');
+  }
+
+  if (description !== undefined && description.length > 1024) {
+    fail(skillFilePath, 'Frontmatter "description" must be 1024 characters or fewer.');
+  }
+
+  if (license !== undefined && license.length > 200) {
+    fail(skillFilePath, 'Frontmatter "license" should be a short license name or file reference.');
+  }
+
+  if (compatibility !== undefined && compatibility.length > 500) {
+    fail(skillFilePath, 'Frontmatter "compatibility" must be 500 characters or fewer.');
+  }
+
+  if (Object.hasOwn(parsed, "disable-model-invocation")) {
+    fail(
+      skillFilePath,
+      'Unsupported frontmatter key "disable-model-invocation"; use agents/openai.yaml policy.allow_implicit_invocation instead.',
+    );
+  }
+
+  const metadata = parsed.metadata;
+  if (metadata !== undefined) {
+    if (!isObject(metadata)) {
+      fail(skillFilePath, 'Expected frontmatter "metadata" to be an object when provided.');
+      return;
+    }
+
+    for (const [key, value] of Object.entries(metadata)) {
+      if (typeof value !== "string") {
+        fail(skillFilePath, `Expected frontmatter "metadata.${key}" to be a string.`);
+      }
+    }
   }
 }
 

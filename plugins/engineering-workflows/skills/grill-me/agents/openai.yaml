@@ -1,0 +1,7 @@
+version: 1
+interface:
+  display_name: "Grill Me"
+  short_description: "Stress-test a plan through questions"
+  default_prompt: "Use $engineering-workflows:grill-me to stress-test this plan."
+policy:
+  allow_implicit_invocation: false

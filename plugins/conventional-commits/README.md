@@ -1,5 +1,7 @@
 # Conventional Commits
 
+![Conventional Commits plugin logo](assets/logo.png)
+
 Skills for planning, writing, validating, and executing Conventional Commits.
 
 ## Skills

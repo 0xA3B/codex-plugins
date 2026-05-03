@@ -9,10 +9,14 @@ description:
 # Writing Conventional Commits
 
 Authoritative commit format and commit-planning workflow for the current repository. This skill is
-the source of truth for any commit workflow that drafts or validates commit messages. When paired
-with the user-invoked `commit` workflow, that workflow SHOULD delegate commit message construction
-and commit-format validation to this skill. Repository-specific commit rules discovered from local
-docs, hooks, or validation tooling SHOULD override the default profile in this skill.
+the source of truth for any commit workflow that drafts or validates commit messages. Its successful
+outcome is Conventional Commit message text, split guidance, or validation feedback that is specific
+enough to use without reinterpreting the policy.
+
+When paired with the user-invoked `conventional-commits:commit` workflow, that workflow SHOULD
+delegate commit message construction and commit-format validation to this skill. Repository-specific
+commit rules discovered from local docs, hooks, or validation tooling SHOULD override the default
+profile in this skill.
 
 Reference specification:
 
@@ -28,6 +32,26 @@ Reference specification:
 - Hook installation and commit-message linting are optional helpers, not part of the core format.
 - This skill MAY ship a companion validator script under `scripts/` for hook-based enforcement in
   repositories that adopt this commit profile.
+
+## Operating Contract
+
+- State the outcome first: valid message text, split guidance, validation feedback, or a precise
+  reason the policy cannot be applied yet.
+- Treat repository-specific rules as higher priority than the default profile below.
+- Keep policy ownership narrow. Do not stage files, commit files, install hooks, or run unrelated
+  validation unless the invoking workflow explicitly owns that side effect.
+- Use concise final output by default. Add rationale only when type, scope, splitting, or breaking
+  change handling is not obvious.
+- Stop once the message or validation result satisfies the requested contract; do not continue
+  exploring alternate valid wordings.
+
+## Success Criteria
+
+- The header matches Conventional Commits grammar and any repository-specific lint rules.
+- Type, scope, breaking markers, body, and footers are chosen from the change intent and repository
+  evidence.
+- Split guidance maps each unit to one logical purpose and rollback boundary.
+- Ambiguity is surfaced only when it could change the final message or split.
 
 ## Delegation Contract
 
@@ -160,15 +184,13 @@ vocabulary, prefer that over these defaults.
 
 Prefer short, human-readable scopes that make release notes and review history clearer.
 
-## Commit Workflow
+## Message Planning Workflow
 
-1. Inspect staged and unstaged changes.
+1. Inspect the provided change summary, diff, or staged and unstaged changes.
 2. Partition changes into logical commit units.
 3. Pick type, scope, and breaking-change markers per unit.
-4. Stage only the files/hunks for one unit.
-5. Write header/body/footers using the rules above.
-6. Repeat for remaining units.
-7. Avoid `git commit --no-verify` except emergency recovery.
+4. Write header/body/footers using the rules above.
+5. Return warnings only for assumptions that could change the message or split.
 
 ## Body and Footer Preferences
 

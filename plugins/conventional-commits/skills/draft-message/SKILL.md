@@ -9,10 +9,13 @@ description:
 # Draft Message
 
 User-invoked workflow skill for drafting Conventional Commit messages without mutating git state.
-This skill owns change inspection, intent clarification, and final message presentation. It does not
-own Conventional Commit policy. `conventional-commits:writing-conventional-commits` is the
-model-invoked authority for message structure, type and scope guidance, split heuristics, and
-validation rules.
+This skill owns change inspection, intent clarification, and final message presentation. Its
+successful outcome is ready-to-use commit message text for the requested changes, plus only the
+assumptions needed to review that text.
+
+This skill does not own Conventional Commit policy.
+`conventional-commits:writing-conventional-commits` is the model-invoked authority for message
+structure, type and scope guidance, split heuristics, and validation rules.
 
 Use this skill when the user wants message text only. Use `conventional-commits:commit` when the
 user wants changes staged and committed.
@@ -25,6 +28,24 @@ user wants changes staged and committed.
   split policy.
 - If the repository has documented commit conventions beyond Conventional Commits, follow them.
 - MUST NOT stage files, create commits, amend commits, or rewrite history.
+
+## Success Criteria
+
+- Drafted message text follows repository-specific rules when they are discoverable.
+- One message is returned for one logical unit; multiple messages are returned only when the changes
+  should be split by purpose, type, scope, or rollback boundary.
+- Any weak assumption that could change type, scope, body, footer, or breaking-change handling is
+  stated briefly.
+- No repository state is mutated.
+
+## Context Gathering
+
+- Prefer user-provided summaries or diffs when they are specific enough.
+- When inspecting the repository, read only the requested diff, current change summary, and nearby
+  commit rules needed to draft confidently.
+- Stop gathering context once the message unit(s), intent, and applicable rules are clear.
+- Do not keep searching for alternate wording after the message satisfies the requested output
+  shape.
 
 ## Delegation Boundaries
 

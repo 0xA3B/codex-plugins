@@ -9,9 +9,13 @@ description:
 # Commit
 
 User-invoked workflow skill for committing current repository changes quickly and consistently. This
-skill owns git state inspection, commit partitioning, staging, and commit execution. It does not own
-Conventional Commit policy. `conventional-commits:writing-conventional-commits` is the model-invoked
-authority for message structure, type and scope guidance, split heuristics, and validation rules.
+skill owns git state inspection, commit partitioning, staging, and commit execution. Its successful
+outcome is a clean sequence of repository commits that matches the user's requested scope and can be
+explained briefly after execution.
+
+This skill does not own Conventional Commit policy.
+`conventional-commits:writing-conventional-commits` is the model-invoked authority for message
+structure, type and scope guidance, split heuristics, and validation rules.
 
 Use this skill when the user wants commits created. Use `conventional-commits:draft-message` when
 the user wants commit message text without staging or committing.
@@ -23,6 +27,24 @@ the user wants commit message text without staging or committing.
 - It uses `conventional-commits:writing-conventional-commits` as the authoritative commit format and
   split policy.
 - If the repository has documented commit conventions beyond Conventional Commits, follow them.
+
+## Success Criteria
+
+- The intended changes are committed, or a precise blocker is reported.
+- Each commit has one logical purpose, one rollback boundary, and a valid Conventional Commit
+  message.
+- Repository-specific commit rules, hooks, and sandbox requirements are respected.
+- The final response names the created commit(s) and any files intentionally left uncommitted.
+
+## Context Gathering
+
+- Start with the smallest useful git state inspection for the requested scope.
+- Read repository commit rules only when they are likely to exist or are referenced by hooks,
+  config, docs, or the user.
+- Stop gathering context once the changed units, applicable commit rules, and safety constraints are
+  clear enough to commit.
+- Do not keep searching for alternative scopes or message phrasings after the commit plan is
+  defensible.
 
 ## Delegation Boundaries
 
@@ -55,7 +77,8 @@ the user wants commit message text without staging or committing.
    - For each unit, delegate type, scope, and breaking-change guidance to
      `conventional-commits:writing-conventional-commits`
 3. Execute commits in dependency order:
-   - Stage and commit the unit with elevated sandbox permissions per repository policy.
+   - Stage and commit one unit at a time.
+   - Use elevated sandbox permissions only when the environment or repository policy requires it.
    - Repeat until all intended changes are committed
 4. Return a concise summary of created commits.
 
@@ -78,22 +101,6 @@ Split commits when units differ by:
 
 Keep together when changes are jointly required for one behavior and should be reverted together.
 
-## Type and Scope Heuristics
-
-Use these defaults only when the repository does not already define a preferred vocabulary.
-
-Type mapping:
-
-- `feat`: new user-visible capability
-- `fix`: bug or correctness issue
-- `refactor`: internal structure change without behavior change
-- `docs`, `test`, `perf`, `build`, `ci`, `chore`, `revert`: use when they best match intent
-
-Scope mapping (prefer intent-based short nouns):
-
-- `api`, `ui`, `cli`, `auth`, `data`, `db`, `test`, `tooling`, `deps`, `ci`, `build`
-- Omit scope for truly cross-cutting changes
-
 ## Optional Overrides
 
 If user provides extra context, apply it without switching to high-interaction mode:
@@ -108,3 +115,4 @@ If user provides extra context, apply it without switching to high-interaction m
 - MUST NOT use `git commit --no-verify` unless explicitly requested.
 - MUST NOT include ignored/local artifact paths unless explicitly requested.
 - MUST stop and report if conflicts prevent safe commit execution.
+- MUST keep staging and commit commands serialized.

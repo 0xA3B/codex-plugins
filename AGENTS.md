@@ -27,4 +27,4 @@ of personal skills.
 
 ## Project Conventions
 
-- Commit messages must follow Conventional Commits.
+- Commit messages must follow `conventional-commits:writing-conventional-commits`.

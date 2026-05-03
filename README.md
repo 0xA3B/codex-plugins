@@ -3,23 +3,46 @@
 Personal Codex plugin marketplace for skills and workflows I want to keep centralized across Codex
 sessions.
 
-## Setup
+## Install
+
+Add marketplace to Codex:
+
+```bash
+codex plugin marketplace add 0xA3B/codex-plugins
+```
+
+Upgrade the marketplace later:
+
+```bash
+codex plugin marketplace upgrade 0xa3b-marketplace
+```
+
+Then open Codex and install the plugin from the plugin browser:
+
+```bash
+codex
+/plugins
+```
+
+Select the `0xA3B Marketplace` marketplace and install the desired plugins.
+
+## Development Setup
 
 Install dependencies:
 
-```fish
+```bash
 pnpm install
 ```
 
 Check formatting:
 
-```fish
+```bash
 pnpm format:check
 ```
 
 Format supported files:
 
-```fish
+```bash
 pnpm format
 ```
 

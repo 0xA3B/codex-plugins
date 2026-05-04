@@ -17,41 +17,7 @@ Upgrade the marketplace later:
 codex plugin marketplace upgrade 0xa3b-marketplace
 ```
 
-Then open Codex and install the plugin from the plugin browser:
-
-```bash
-codex
-/plugins
-```
-
-Select the `0xA3B Marketplace` marketplace and install the desired plugins.
-
-## Development Setup
-
-Install dependencies:
-
-```bash
-pnpm install
-```
-
-Check formatting:
-
-```bash
-pnpm format:check
-```
-
-Format supported files:
-
-```bash
-pnpm format
-```
-
-## Repository Layout
-
-- `.agents/plugins/marketplace.json`: Codex marketplace catalog for the plugins in this repository.
-- `plugins/<plugin-name>/.codex-plugin/plugin.json`: Codex plugin manifest.
-- `plugins/<plugin-name>/skills/<skill-name>/SKILL.md`: Skill instructions loaded by Codex.
-- `plugins/<plugin-name>/skills/<skill-name>/agents/openai.yaml`: Codex UI and invocation metadata.
+After adding or upgrading the marketplace, install the desired plugins from Codex.
 
 ## Plugins
 
@@ -82,20 +48,3 @@ preserved in each skill's Agent Skills frontmatter metadata.
 - `engineering-workflows:zoom-out`: Maps an unfamiliar code area at a higher level of abstraction.
 - `engineering-workflows:improve-codebase-architecture`: Finds module deepening and architecture
   improvement opportunities.
-
-## Adding Skills
-
-Add new skills under the relevant plugin:
-
-```text
-plugins/<plugin-name>/skills/<skill-name>/
-├── SKILL.md
-└── agents/
-    └── openai.yaml
-```
-
-Use `SKILL.md` for the runtime instructions and `agents/openai.yaml` for Codex-specific metadata
-such as display name, default prompt, and implicit invocation policy.
-
-When a new plugin is added, include it in `.agents/plugins/marketplace.json` and give it a
-`.codex-plugin/plugin.json` manifest.

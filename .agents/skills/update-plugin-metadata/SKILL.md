@@ -1,0 +1,54 @@
+---
+name: update-plugin-metadata
+description:
+  Updates Codex marketplace plugin metadata, marketplace entries, README files, and skill UI
+  metadata in this repository. Use when the user asks to revise plugin descriptions, prompts,
+  authorship, categories, keywords, versions, or metadata consistency.
+---
+
+# Update Plugin Metadata
+
+Repo-local workflow for keeping plugin metadata consistent across the Codex marketplace.
+
+## Source Of Truth
+
+- Follow `plugins/AGENTS.md` for manifest conventions and skill metadata placement.
+- Plugin metadata lives in `plugins/<plugin-name>/.codex-plugin/plugin.json`.
+- Marketplace entries live in `.agents/plugins/marketplace.json`.
+- Skill-level Codex UI metadata lives in
+  `plugins/<plugin-name>/skills/<skill-name>/agents/openai.yaml`.
+- Plugin README files carry user-facing plugin summaries.
+
+## Workflow
+
+1. Identify the target plugin or plugins.
+2. Read the plugin manifest and marketplace entry before editing.
+3. Determine whether the request changes plugin name, version, description, author, repository,
+   keywords, category, prompts, skill display names, skill descriptions, invocation policy, or
+   README-visible summaries.
+4. Update all affected metadata surfaces together.
+5. Preserve schema-specific field names and shapes; do not normalize them into a different
+   structure.
+6. Run validation:
+
+   ```bash
+   pnpm validate:plugins
+   pnpm format:check
+   ```
+
+7. Run `pnpm lint` and `pnpm typecheck` when validation tooling changed.
+
+## Consistency Rules
+
+- Keep plugin `name`, `version`, `description`, `author`, `repository`, `keywords`, and `skills`
+  aligned with the marketplace catalog and plugin directory.
+- Use plugin-qualified Codex prompts such as `$plugin-name:skill-name`.
+- Keep README skill lists aligned with actual `plugins/<plugin-name>/skills/` directories.
+- Do not add Codex-only policy keys to `SKILL.md` frontmatter.
+
+## Boundaries
+
+- Do not add a new skill body; use `add-skill`.
+- Do not add a scaffold script or template unless the user explicitly asks for plugin creation
+  automation.
+- Do not commit changes unless the user asks.

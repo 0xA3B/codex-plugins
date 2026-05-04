@@ -13,6 +13,15 @@ Repo-local wrapper for adding a skill under `plugins/<plugin-name>/skills/`.
 Use the built-in `skill-creator` guidance for drafting or materially revising `SKILL.md`. This skill
 adds only this repository's plugin placement, metadata, documentation, and validation conventions.
 
+## Outcome
+
+Create a complete skill in an existing plugin with the expected repo layout, Codex metadata,
+plugin-facing docs when useful, and passing plugin validation.
+
+Stop when the new skill is present, relevant metadata/docs are updated, and validation has passed.
+If the target plugin is ambiguous, the skill already exists, or validation fails for a reason that
+is not clearly caused by this change, report the blocker and the safest next action.
+
 ## Source Of Truth
 
 - Follow `plugins/AGENTS.md` for skill metadata placement and authoring rules.
@@ -25,23 +34,22 @@ adds only this repository's plugin placement, metadata, documentation, and valid
 
 ## Workflow
 
-1. Identify the target plugin and new skill name.
-2. Normalize the skill name to lowercase kebab-case.
-3. Confirm the skill does not already exist at `plugins/<plugin-name>/skills/<skill-name>/`.
-4. Create:
+1. Identify the target plugin and normalize the skill name to lowercase kebab-case.
+2. Confirm the skill does not already exist at `plugins/<plugin-name>/skills/<skill-name>/`.
+3. Create:
 
    ```text
    plugins/<plugin-name>/skills/<skill-name>/SKILL.md
    plugins/<plugin-name>/skills/<skill-name>/agents/openai.yaml
    ```
 
-5. Use `skill-creator` guidance to draft `SKILL.md`; apply `plugins/AGENTS.md` for this repo's
+4. Use `skill-creator` guidance to draft `SKILL.md`; apply `plugins/AGENTS.md` for this repo's
    frontmatter and placement rules.
-6. Write `agents/openai.yaml` with `interface.display_name`, `interface.short_description`,
+5. Write `agents/openai.yaml` with `interface.display_name`, `interface.short_description`,
    `interface.default_prompt`, and `policy.allow_implicit_invocation`.
-7. Update the plugin README when the new skill should be visible to plugin users.
-8. Update Codex plugin default prompts when the new skill is a primary user workflow.
-9. Run validation:
+6. Update the plugin README when the new skill should be visible to plugin users.
+7. Update Codex plugin default prompts when the new skill is a primary user workflow.
+8. Run validation:
 
    ```bash
    pnpm validate:plugins

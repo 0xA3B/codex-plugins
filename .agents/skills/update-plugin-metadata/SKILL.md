@@ -10,6 +10,15 @@ description:
 
 Repo-local workflow for keeping plugin metadata consistent across the Codex marketplace.
 
+## Outcome
+
+Update all metadata surfaces affected by the request while preserving this repo's schemas and
+keeping plugin discovery, README summaries, skill UI metadata, and default prompts consistent.
+
+Stop when the affected surfaces are aligned and validation has passed. If the requested metadata
+change implies a plugin rename, schema change, or new skill body, update only the safe surfaces and
+report the remaining work instead of guessing.
+
 ## Source Of Truth
 
 - Follow `plugins/AGENTS.md` for manifest conventions and skill metadata placement.
@@ -29,14 +38,16 @@ Repo-local workflow for keeping plugin metadata consistent across the Codex mark
 4. Update all affected metadata surfaces together.
 5. Preserve schema-specific field names and shapes; do not normalize them into a different
    structure.
-6. Run validation:
+6. When evidence is missing, inspect the actual plugin directories and existing metadata before
+   inventing names, summaries, prompts, or categories.
+7. Run validation:
 
    ```bash
    pnpm validate:plugins
    pnpm format:check
    ```
 
-7. Run `pnpm lint` and `pnpm typecheck` when validation tooling changed.
+8. Run `pnpm lint` and `pnpm typecheck` when validation tooling changed.
 
 ## Consistency Rules
 

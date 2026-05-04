@@ -24,6 +24,16 @@ These instructions apply to plugin directories under `plugins/`.
 
 ## Skill Authoring Baseline
 
+- Optimize Codex skills and prompts for GPT-5.5 by describing the outcome, success criteria,
+  constraints, allowed side effects, evidence rules, and final output shape.
+- Prefer outcome-first instructions over step-by-step procedures. Keep exact sequences only when
+  repository safety, file placement, validation, or command ordering requires them.
+- Use absolute instructions such as "must" or "do not" only for true invariants. For judgment calls,
+  provide decision rules and missing-evidence behavior.
+- Add explicit stopping conditions for tool-heavy workflows: stop when validation passes, when the
+  requested artifact is complete, or when a blocker prevents safe execution.
+- Remove contradictory or overlapping instructions during prompt review. GPT-5.5 follows literal
+  instructions closely, so stale or vague guidance can cause unnecessary work.
 - Treat the `description` as the trigger contract: describe what the skill does and when agents
   should use it.
 - Keep `SKILL.md` concise and procedural. Include only context needed to perform the workflow.

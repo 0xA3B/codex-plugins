@@ -10,6 +10,14 @@ description:
 
 Repo-local workflow for validating plugin and skill-authoring changes.
 
+## Outcome
+
+Run the smallest validation set that proves the current plugin or skill change is ready, fix clear
+failures caused by the change, and report exactly what passed or what remains blocked.
+
+Stop when the relevant checks pass. If a failure is unrelated, destructive to fix, or requires a
+product decision, report it without broadening the change.
+
 ## Source Of Truth
 
 - `pnpm validate:plugins` validates the marketplace catalog, plugin manifests, skill frontmatter,
@@ -23,7 +31,8 @@ Repo-local workflow for validating plugin and skill-authoring changes.
 ## Workflow
 
 1. Inspect current changes with `git status --short`.
-2. Run the narrowest relevant validation:
+2. Choose checks from the files changed and the requested confidence level. Start with plugin
+   validation for plugin or skill metadata changes:
 
    ```bash
    pnpm validate:plugins
@@ -48,7 +57,8 @@ Repo-local workflow for validating plugin and skill-authoring changes.
    pnpm check
    ```
 
-6. If a check fails, fix the issue when the cause is clear and rerun the failed check.
+6. If a check fails, fix the issue when the cause is clear and rerun only the failed or affected
+   checks.
 7. Report checks run, pass/fail result, files changed by any formatter, and remaining risks or
    skipped checks.
 

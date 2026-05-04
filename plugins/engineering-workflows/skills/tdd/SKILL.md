@@ -14,6 +14,19 @@ metadata:
 Use a red-green-refactor loop with vertical slices. Tests should verify behavior through public
 interfaces, not implementation details.
 
+## Outcome
+
+Deliver the requested behavior through a sequence of small red-green-refactor cycles. The final code
+should have behavior-focused tests at the public interface, minimal speculative design, and relevant
+project validation passing.
+
+## Allowed Side Effects
+
+- Edit production code and tests needed for the current behavior.
+- Reuse existing fixtures, helpers, and project commands.
+- Refactor touched code after a passing test proves behavior, while keeping behavior unchanged.
+- Do not broaden the task into unrelated cleanup or architecture work unless the user asks.
+
 ## Philosophy
 
 Good tests are integration-style where practical: they exercise real code paths through public APIs
@@ -99,6 +112,9 @@ Mock only at real external boundaries or slow/unstable dependencies. Do not mock
 make implementation-shaped tests easier. Use [mocking.md](references/mocking.md) when choosing what
 to fake.
 
+Reference examples may use TypeScript, but apply the testing principles in the repository's actual
+language and test framework.
+
 ## Completion
 
 When the requested behavior is implemented:
@@ -107,3 +123,7 @@ When the requested behavior is implemented:
 - Report the red-green-refactor sequence at a high level.
 - Name the tests added or changed.
 - Note any behavior that remains intentionally untested and why.
+
+Stop when the requested behavior is implemented and validation passes, or when the next slice is
+blocked by an ambiguous interface, missing dependency, or failing project setup that cannot be
+resolved from local evidence.

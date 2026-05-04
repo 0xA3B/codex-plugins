@@ -16,6 +16,19 @@ Run a grilling session that resolves a plan and captures durable project knowled
 This skill combines `engineering-workflows:grill-me` with active repository inspection and careful
 updates to domain docs and ADRs.
 
+## Outcome
+
+Produce an implementation-ready, deferrable, or rejectable plan while preserving stable terminology
+and durable architectural decisions in the repository's project docs.
+
+## Allowed Side Effects
+
+- Inspect repository code and docs to answer questions without asking the user.
+- Update the relevant `CONTEXT.md` when stable domain terms are resolved.
+- Update or create `CONTEXT-MAP.md` only when needed to locate multiple meaningful contexts.
+- Add an ADR under the relevant `docs/adr/` directory only when the ADR criteria are met.
+- Do not edit implementation code as part of this skill.
+
 ## Core Behavior
 
 - Ask one question at a time and wait for the user's answer.
@@ -121,3 +134,6 @@ End with a concise summary:
 - ADRs added or intentionally deferred.
 - Remaining open questions.
 - Recommended next action.
+
+Stop when the plan is specific enough to implement, defer, or reject, and all stable terminology or
+durable decisions discovered during the session have either been captured or explicitly deferred.

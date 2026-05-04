@@ -14,6 +14,19 @@ metadata:
 
 Go up a layer of abstraction before diving into implementation details.
 
+## Outcome
+
+Give the user a repository-grounded map of the requested area so they can safely inspect, edit, or
+make a planning decision.
+
+## Success Criteria
+
+- The explanation identifies the area's responsibility, main modules, entry points, callers, and
+  data or control flow.
+- Claims are backed by code or doc references when practical.
+- Important conventions, risks, and missing evidence are called out.
+- The answer stays oriented toward the user's likely next action.
+
 ## Workflow
 
 1. Identify the code area, feature, file, symbol, or behavior the user wants to understand.
@@ -30,3 +43,6 @@ Go up a layer of abstraction before diving into implementation details.
 
 Prefer clear code references over broad architectural claims. If the map is uncertain, say what
 evidence is missing.
+
+Stop when the map is sufficient for the user's next action. Do not keep expanding into unrelated
+areas unless the inspected evidence shows they control the requested behavior.

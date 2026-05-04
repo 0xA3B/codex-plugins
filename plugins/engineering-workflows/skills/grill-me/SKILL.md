@@ -15,14 +15,19 @@ metadata:
 Interview the user about the plan until there is a shared understanding of the shape of the work.
 Walk the decision tree one branch at a time, resolving dependencies before moving deeper.
 
+## Outcome
+
+Produce a plan that is specific enough to implement, defer, or reject. The session should resolve
+the decisions that materially affect implementation, risk, scope, product behavior, or validation.
+
 ## Behavior
 
 - Ask one question at a time and wait for the user's answer.
 - For each question, include the answer you recommend and the tradeoff it resolves.
-- If a question can be answered by inspecting the repository, inspect the relevant code or docs
-  instead of asking.
-- Keep the session focused on decisions that affect implementation, risk, scope, product behavior,
-  or validation.
+- If a question can be answered by inspecting the repository or running a targeted web search,
+  gather that evidence instead of asking.
+- Ask the next question that most reduces implementation risk or decision ambiguity.
+- Do not edit files, create docs, or implement the plan.
 - Stop when the plan is specific enough to implement, defer, or reject.
 
 ## Output

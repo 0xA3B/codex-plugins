@@ -16,6 +16,21 @@ Surface architectural friction and propose deepening opportunities: refactors th
 behavior behind simpler interfaces. The goal is better locality, leverage, testability, and
 agent-navigability.
 
+## Outcome
+
+Produce a prioritized architecture review grounded in repository evidence, or a concrete
+implementation plan for a selected refactor. The first pass is analysis only unless the user
+explicitly asks for implementation or durable documentation updates.
+
+## Evidence Rules
+
+- Tie each candidate to specific files, modules, callers, tests, docs, or observed navigation
+  friction.
+- State uncertainty when evidence is incomplete, and name the evidence that would change the
+  recommendation.
+- Do not treat a theoretical pattern preference as a candidate unless repository evidence shows
+  friction.
+
 ## Language
 
 Use this vocabulary consistently in every suggestion. The full definitions live in
@@ -71,6 +86,7 @@ Present a numbered list of deepening opportunities. For each candidate include:
 - **Solution**: what would change in plain English.
 - **Benefits**: why locality, leverage, or tests improve.
 - **Risks**: migration cost, compatibility issues, or uncertainty.
+- **Evidence**: the concrete code or doc evidence that supports the candidate.
 
 Use the project's domain language from `CONTEXT.md` when available. If an idea conflicts with an
 existing ADR, surface it only when the friction is strong enough to justify revisiting that
@@ -104,3 +120,6 @@ End with either:
 
 - A prioritized architecture review and the next decision to make, or
 - A concrete implementation plan for the selected refactor, including validation steps.
+
+Stop the first pass once the strongest defensible candidates are clear. Do not keep searching for
+additional theoretical refactors after the review has enough evidence to guide the next decision.

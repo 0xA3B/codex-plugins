@@ -24,19 +24,20 @@ Show this to the user, then proceed to Step 2.
 
 Produce at least three radically different interfaces for the deepened module.
 
-If the user explicitly asks for parallel agent work, spawn separate agents with independent
-technical briefs. Otherwise, generate the alternatives yourself and keep the designs meaningfully
-distinct.
+Generate the alternatives yourself by default. If the user explicitly asks for parallel agent work,
+spawn separate agents only for bounded read-heavy design exploration. Give each subagent an
+independent technical brief, tell it to inspect the repository locally, and ask for a concise design
+summary rather than raw notes. The main agent compares the designs and owns the recommendation.
 
 Each design brief should include file paths, coupling details, dependency category from
 [DEEPENING.md](DEEPENING.md), and what sits behind the seam. Give each design a different
 constraint:
 
-- Agent 1: "Minimize the interface — aim for 1–3 entry points max. Maximise leverage per entry
+- Design A: "Minimize the interface — aim for 1–3 entry points max. Maximise leverage per entry
   point."
-- Agent 2: "Maximise flexibility — support many use cases and extension."
-- Agent 3: "Optimise for the most common caller — make the default case trivial."
-- Agent 4 (if applicable): "Design around ports & adapters for cross-seam dependencies."
+- Design B: "Maximise flexibility — support many use cases and extension."
+- Design C: "Optimise for the most common caller — make the default case trivial."
+- Design D (if applicable): "Design around ports & adapters for cross-seam dependencies."
 
 Include both [LANGUAGE.md](LANGUAGE.md) vocabulary and `CONTEXT.md` vocabulary so each design names
 things consistently with the architecture language and the project's domain language.

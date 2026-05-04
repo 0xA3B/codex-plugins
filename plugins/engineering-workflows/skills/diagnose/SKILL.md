@@ -17,6 +17,15 @@ Use a disciplined loop for hard bugs. Skip phases only when explicitly justified
 When exploring the codebase, read the project's domain glossary and relevant ADRs when they exist.
 Use project-specific test, lint, run, and reproduction workflows over generic commands.
 
+## Success Criteria
+
+- The reported symptom is reproduced with a credible feedback loop, or the missing artifact or
+  access is identified.
+- The root cause is supported by evidence from the loop, instrumentation, or code inspection.
+- The fix addresses that cause and preserves nearby behavior.
+- A durable regression check covers the bug when a correct test seam exists.
+- Temporary instrumentation and throwaway harnesses are removed or clearly left as durable tooling.
+
 ## Phase 1: Build A Feedback Loop
 
 This is the skill. Everything else depends on having a fast, deterministic, agent-runnable pass/fail
@@ -97,6 +106,9 @@ Each probe must map to a prediction from Phase 3.
 - Keep instrumentation easy to remove.
 - Record what each probe proves or rules out.
 
+Tag temporary debug output with a distinctive prefix when practical so cleanup can be verified with
+a focused search.
+
 If a probe contradicts the current theory, update the ranked hypotheses instead of forcing the
 evidence to fit.
 
@@ -104,12 +116,19 @@ evidence to fit.
 
 Make the smallest change that explains the reproduced failure and the instrumentation results.
 
+When a correct test seam exists, turn the minimized reproduction into a failing regression check
+before applying the fix. A correct seam exercises the same bug pattern as the real failure; a
+shallow test that cannot reproduce the causal path gives false confidence.
+
 The fix should:
 
 - Address the cause, not only mask the symptom.
 - Preserve existing behavior outside the failing path.
 - Remove temporary instrumentation unless it belongs as durable observability.
 - Keep the feedback loop in place long enough to prove the fix.
+
+If no correct regression seam exists, note that as an architecture or testability finding and still
+prove the fix with the best available loop.
 
 ## Phase 6: Regression-Test
 

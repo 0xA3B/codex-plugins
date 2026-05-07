@@ -16,6 +16,12 @@ type Diagnostic = {
   pointer?: string;
 };
 
+type ValidationContext = {
+  diagnostics: Diagnostic[];
+  externalValidationEnabled: boolean;
+  repoRoot: string;
+};
+
 type LocalCatalogEntry = {
   category: string | undefined;
   manifestPath: string;
@@ -45,18 +51,24 @@ type ComponentPathRule = {
 };
 
 const execFileAsync = promisify(execFile);
-const repoRoot = process.cwd();
-const diagnostics: Diagnostic[] = [];
-const externalValidationEnabled = process.argv.includes("--external");
+
+function createValidationContext(): ValidationContext {
+  return {
+    diagnostics: [],
+    externalValidationEnabled: process.argv.includes("--external"),
+    repoRoot: process.cwd(),
+  };
+}
 
 function report(
+  context: ValidationContext,
   severity: Severity,
   ruleId: string,
   filePath: string,
   message: string,
   pointer?: string,
 ): void {
-  diagnostics.push({
+  context.diagnostics.push({
     filePath,
     message,
     ruleId,
@@ -65,12 +77,24 @@ function report(
   });
 }
 
-function error(ruleId: string, filePath: string, message: string, pointer?: string): void {
-  report("error", ruleId, filePath, message, pointer);
+function error(
+  context: ValidationContext,
+  ruleId: string,
+  filePath: string,
+  message: string,
+  pointer?: string,
+): void {
+  report(context, "error", ruleId, filePath, message, pointer);
 }
 
-function warning(ruleId: string, filePath: string, message: string, pointer?: string): void {
-  report("warning", ruleId, filePath, message, pointer);
+function warning(
+  context: ValidationContext,
+  ruleId: string,
+  filePath: string,
+  message: string,
+  pointer?: string,
+): void {
+  report(context, "warning", ruleId, filePath, message, pointer);
 }
 
 function isObject(value: unknown): value is JsonObject {
@@ -78,6 +102,7 @@ function isObject(value: unknown): value is JsonObject {
 }
 
 function getObject(
+  context: ValidationContext,
   parent: JsonObject,
   key: string,
   filePath: string,
@@ -86,7 +111,7 @@ function getObject(
   const value = parent[key];
 
   if (!isObject(value)) {
-    error("schema/object", filePath, `Expected "${key}" to be an object.`, pointer);
+    error(context, "schema/object", filePath, `Expected "${key}" to be an object.`, pointer);
     return undefined;
   }
 
@@ -94,6 +119,7 @@ function getObject(
 }
 
 function getOptionalObject(
+  context: ValidationContext,
   parent: JsonObject,
   key: string,
   filePath: string,
@@ -106,7 +132,13 @@ function getOptionalObject(
   }
 
   if (!isObject(value)) {
-    error("schema/object", filePath, `Expected "${key}" to be an object when provided.`, pointer);
+    error(
+      context,
+      "schema/object",
+      filePath,
+      `Expected "${key}" to be an object when provided.`,
+      pointer,
+    );
     return undefined;
   }
 
@@ -114,6 +146,7 @@ function getOptionalObject(
 }
 
 function getString(
+  context: ValidationContext,
   parent: JsonObject,
   key: string,
   filePath: string,
@@ -122,7 +155,13 @@ function getString(
   const value = parent[key];
 
   if (typeof value !== "string" || value.length === 0) {
-    error("schema/string", filePath, `Expected "${key}" to be a non-empty string.`, pointer);
+    error(
+      context,
+      "schema/string",
+      filePath,
+      `Expected "${key}" to be a non-empty string.`,
+      pointer,
+    );
     return undefined;
   }
 
@@ -130,6 +169,7 @@ function getString(
 }
 
 function getOptionalString(
+  context: ValidationContext,
   parent: JsonObject,
   key: string,
   filePath: string,
@@ -143,6 +183,7 @@ function getOptionalString(
 
   if (typeof value !== "string" || value.length === 0) {
     error(
+      context,
       "schema/string",
       filePath,
       `Expected "${key}" to be a non-empty string when provided.`,
@@ -155,6 +196,7 @@ function getOptionalString(
 }
 
 function getBoolean(
+  context: ValidationContext,
   parent: JsonObject,
   key: string,
   filePath: string,
@@ -163,7 +205,7 @@ function getBoolean(
   const value = parent[key];
 
   if (typeof value !== "boolean") {
-    error("schema/boolean", filePath, `Expected "${key}" to be a boolean.`, pointer);
+    error(context, "schema/boolean", filePath, `Expected "${key}" to be a boolean.`, pointer);
     return undefined;
   }
 
@@ -195,34 +237,40 @@ async function isFile(filePath: string): Promise<boolean> {
   }
 }
 
-async function readJsonObject(filePath: string): Promise<JsonObject | undefined> {
+async function readJsonObject(
+  context: ValidationContext,
+  filePath: string,
+): Promise<JsonObject | undefined> {
   try {
     const parsed: unknown = JSON.parse(await readFile(filePath, "utf8"));
 
     if (!isObject(parsed)) {
-      error("schema/root-object", filePath, "Expected root value to be an object.");
+      error(context, "schema/root-object", filePath, "Expected root value to be an object.");
       return undefined;
     }
 
     return parsed;
   } catch (readError) {
-    error("parse/json", filePath, `Unable to parse JSON: ${errorMessage(readError)}`);
+    error(context, "parse/json", filePath, `Unable to parse JSON: ${errorMessage(readError)}`);
     return undefined;
   }
 }
 
-async function readYamlObject(filePath: string): Promise<JsonObject | undefined> {
+async function readYamlObject(
+  context: ValidationContext,
+  filePath: string,
+): Promise<JsonObject | undefined> {
   try {
     const parsed: unknown = parseYaml(await readFile(filePath, "utf8"));
 
     if (!isObject(parsed)) {
-      error("schema/root-object", filePath, "Expected root value to be an object.");
+      error(context, "schema/root-object", filePath, "Expected root value to be an object.");
       return undefined;
     }
 
     return parsed;
   } catch (readError) {
-    error("parse/yaml", filePath, `Unable to parse YAML: ${errorMessage(readError)}`);
+    error(context, "parse/yaml", filePath, `Unable to parse YAML: ${errorMessage(readError)}`);
     return undefined;
   }
 }
@@ -231,8 +279,8 @@ function errorMessage(caught: unknown): string {
   return caught instanceof Error ? caught.message : String(caught);
 }
 
-function relativeDisplay(filePath: string, pointer?: string): string {
-  const relativePath = path.relative(repoRoot, filePath);
+function relativeDisplay(context: ValidationContext, filePath: string, pointer?: string): string {
+  const relativePath = path.relative(context.repoRoot, filePath);
   return pointer === undefined ? relativePath : `${relativePath}${pointer}`;
 }
 
@@ -242,6 +290,7 @@ function isInside(baseDir: string, targetPath: string): boolean {
 }
 
 function resolveRelativePath(
+  context: ValidationContext,
   reference: string,
   baseDir: string,
   filePath: string,
@@ -249,19 +298,19 @@ function resolveRelativePath(
   ruleId: string,
 ): string | undefined {
   if (!reference.startsWith("./")) {
-    error(ruleId, filePath, `Path must start with "./": ${reference}`, pointer);
+    error(context, ruleId, filePath, `Path must start with "./": ${reference}`, pointer);
     return undefined;
   }
 
   if (path.isAbsolute(reference)) {
-    error(ruleId, filePath, `Path must be relative, not absolute: ${reference}`, pointer);
+    error(context, ruleId, filePath, `Path must be relative, not absolute: ${reference}`, pointer);
     return undefined;
   }
 
   const resolved = path.resolve(baseDir, reference);
   if (!isInside(baseDir, resolved)) {
-    const baseLabel = path.relative(repoRoot, baseDir) || ".";
-    error(ruleId, filePath, `Path must stay inside ${baseLabel}: ${reference}`, pointer);
+    const baseLabel = path.relative(context.repoRoot, baseDir) || ".";
+    error(context, ruleId, filePath, `Path must stay inside ${baseLabel}: ${reference}`, pointer);
     return undefined;
   }
 
@@ -273,6 +322,7 @@ function marketplaceRootFromPath(marketplacePath: string): string {
 }
 
 function validateStringArray(
+  context: ValidationContext,
   value: unknown,
   key: string,
   filePath: string,
@@ -285,6 +335,7 @@ function validateStringArray(
 
   if (!Array.isArray(value) || value.length === 0) {
     error(
+      context,
       "schema/string-array",
       filePath,
       `Expected "${key}" to be a non-empty string array.`,
@@ -297,6 +348,7 @@ function validateStringArray(
   for (const [index, item] of value.entries()) {
     if (typeof item !== "string" || item.length === 0) {
       error(
+        context,
         "schema/string-array",
         filePath,
         `Expected "${key}[${index}]" to be a non-empty string.`,
@@ -312,6 +364,7 @@ function validateStringArray(
 }
 
 function parseHttpUrlString(
+  context: ValidationContext,
   value: string | undefined,
   filePath: string,
   pointer: string,
@@ -324,27 +377,29 @@ function parseHttpUrlString(
   try {
     const parsedUrl = new URL(value);
     if (parsedUrl.protocol !== "https:" && parsedUrl.protocol !== "http:") {
-      error(ruleId, filePath, `Expected an HTTP(S) URL: ${value}`, pointer);
+      error(context, ruleId, filePath, `Expected an HTTP(S) URL: ${value}`, pointer);
       return undefined;
     }
 
     return parsedUrl;
   } catch {
-    error(ruleId, filePath, `Expected a valid URL: ${value}`, pointer);
+    error(context, ruleId, filePath, `Expected a valid URL: ${value}`, pointer);
     return undefined;
   }
 }
 
 function validateUrlString(
+  context: ValidationContext,
   value: string | undefined,
   filePath: string,
   pointer: string,
   ruleId: string,
 ): void {
-  parseHttpUrlString(value, filePath, pointer, ruleId);
+  parseHttpUrlString(context, value, filePath, pointer, ruleId);
 }
 
 function validateGitUrlString(
+  context: ValidationContext,
   value: string | undefined,
   filePath: string,
   pointer: string,
@@ -362,14 +417,14 @@ function validateGitUrlString(
     return value;
   }
 
-  error("url/git", filePath, `Expected a Git URL or SSH Git shorthand: ${value}`, pointer);
+  error(context, "url/git", filePath, `Expected a Git URL or SSH Git shorthand: ${value}`, pointer);
   return undefined;
 }
 
-async function validateMarketplace(): Promise<Catalog> {
-  const marketplacePath = path.join(repoRoot, ".agents", "plugins", "marketplace.json");
+async function validateMarketplace(context: ValidationContext): Promise<Catalog> {
+  const marketplacePath = path.join(context.repoRoot, ".agents", "plugins", "marketplace.json");
   const marketplaceRoot = marketplaceRootFromPath(marketplacePath);
-  const marketplace = await readJsonObject(marketplacePath);
+  const marketplace = await readJsonObject(context, marketplacePath);
   const localEntries = new Map<string, LocalCatalogEntry>();
   const remoteEntries: RemoteCatalogEntry[] = [];
   const seenNames = new Set<string>();
@@ -378,15 +433,33 @@ async function validateMarketplace(): Promise<Catalog> {
     return { localEntries, marketplacePath, remoteEntries };
   }
 
-  getString(marketplace, "name", marketplacePath, "/name");
-  const marketplaceInterface = getObject(marketplace, "interface", marketplacePath, "/interface");
+  getString(context, marketplace, "name", marketplacePath, "/name");
+  const marketplaceInterface = getObject(
+    context,
+    marketplace,
+    "interface",
+    marketplacePath,
+    "/interface",
+  );
   if (marketplaceInterface !== undefined) {
-    getString(marketplaceInterface, "displayName", marketplacePath, "/interface/displayName");
+    getString(
+      context,
+      marketplaceInterface,
+      "displayName",
+      marketplacePath,
+      "/interface/displayName",
+    );
   }
 
   const plugins = marketplace.plugins;
   if (!Array.isArray(plugins)) {
-    error("marketplace/plugins", marketplacePath, 'Expected "plugins" to be an array.', "/plugins");
+    error(
+      context,
+      "marketplace/plugins",
+      marketplacePath,
+      'Expected "plugins" to be an array.',
+      "/plugins",
+    );
     return { localEntries, marketplacePath, remoteEntries };
   }
 
@@ -395,6 +468,7 @@ async function validateMarketplace(): Promise<Catalog> {
 
     if (!isObject(plugin)) {
       error(
+        context,
         "schema/object",
         marketplacePath,
         `Expected plugins[${index}] to be an object.`,
@@ -403,16 +477,17 @@ async function validateMarketplace(): Promise<Catalog> {
       continue;
     }
 
-    const name = getString(plugin, "name", marketplacePath, `${pointer}/name`);
-    const category = getString(plugin, "category", marketplacePath, `${pointer}/category`);
-    const policy = getObject(plugin, "policy", marketplacePath, `${pointer}/policy`);
+    const name = getString(context, plugin, "name", marketplacePath, `${pointer}/name`);
+    const category = getString(context, plugin, "category", marketplacePath, `${pointer}/category`);
+    const policy = getObject(context, plugin, "policy", marketplacePath, `${pointer}/policy`);
 
     if (policy !== undefined) {
-      validatePolicy(policy, marketplacePath, `${pointer}/policy`);
+      validatePolicy(context, policy, marketplacePath, `${pointer}/policy`);
     }
 
     if (name !== undefined && seenNames.has(name)) {
       error(
+        context,
         "marketplace/duplicate-name",
         marketplacePath,
         `Duplicate marketplace plugin name "${name}".`,
@@ -428,6 +503,7 @@ async function validateMarketplace(): Promise<Catalog> {
     const source = plugin.source;
     if (typeof source === "string") {
       const pluginPath = await validateLocalMarketplacePath(
+        context,
         name,
         source,
         category,
@@ -443,6 +519,7 @@ async function validateMarketplace(): Promise<Catalog> {
 
     if (!isObject(source)) {
       error(
+        context,
         "schema/object",
         marketplacePath,
         'Expected "source" to be an object or local path string.',
@@ -451,14 +528,27 @@ async function validateMarketplace(): Promise<Catalog> {
       continue;
     }
 
-    const sourceType = getString(source, "source", marketplacePath, `${pointer}/source/source`);
+    const sourceType = getString(
+      context,
+      source,
+      "source",
+      marketplacePath,
+      `${pointer}/source/source`,
+    );
     if (sourceType === "local") {
-      const sourcePath = getString(source, "path", marketplacePath, `${pointer}/source/path`);
+      const sourcePath = getString(
+        context,
+        source,
+        "path",
+        marketplacePath,
+        `${pointer}/source/path`,
+      );
       if (sourcePath === undefined) {
         continue;
       }
 
       const pluginPath = await validateLocalMarketplacePath(
+        context,
         name,
         sourcePath,
         category,
@@ -470,10 +560,11 @@ async function validateMarketplace(): Promise<Catalog> {
         localEntries.set(name, pluginPath);
       }
     } else if (sourceType === "url" || sourceType === "git-subdir") {
-      validateRemoteMarketplaceSource(source, sourceType, marketplacePath, pointer);
+      validateRemoteMarketplaceSource(context, source, sourceType, marketplacePath, pointer);
       remoteEntries.push({ name, pointer, source });
     } else if (sourceType !== undefined) {
       error(
+        context,
         "marketplace/source-type",
         marketplacePath,
         'Expected source.source to be "local", "url", or "git-subdir".',
@@ -485,15 +576,33 @@ async function validateMarketplace(): Promise<Catalog> {
   return { localEntries, marketplacePath, remoteEntries };
 }
 
-function validatePolicy(policy: JsonObject, filePath: string, pointer: string): void {
-  const installation = getString(policy, "installation", filePath, `${pointer}/installation`);
-  const authentication = getString(policy, "authentication", filePath, `${pointer}/authentication`);
+function validatePolicy(
+  context: ValidationContext,
+  policy: JsonObject,
+  filePath: string,
+  pointer: string,
+): void {
+  const installation = getString(
+    context,
+    policy,
+    "installation",
+    filePath,
+    `${pointer}/installation`,
+  );
+  const authentication = getString(
+    context,
+    policy,
+    "authentication",
+    filePath,
+    `${pointer}/authentication`,
+  );
 
   if (
     installation !== undefined &&
     !["AVAILABLE", "INSTALLED_BY_DEFAULT", "NOT_AVAILABLE"].includes(installation)
   ) {
     error(
+      context,
       "marketplace/policy-installation",
       filePath,
       'Expected policy.installation to be "AVAILABLE", "INSTALLED_BY_DEFAULT", or "NOT_AVAILABLE".',
@@ -503,6 +612,7 @@ function validatePolicy(policy: JsonObject, filePath: string, pointer: string): 
 
   if (authentication !== undefined && !["ON_INSTALL", "ON_FIRST_USE"].includes(authentication)) {
     error(
+      context,
       "marketplace/policy-authentication",
       filePath,
       'Expected policy.authentication to be "ON_INSTALL" or "ON_FIRST_USE".',
@@ -512,6 +622,7 @@ function validatePolicy(policy: JsonObject, filePath: string, pointer: string): 
 }
 
 async function validateLocalMarketplacePath(
+  context: ValidationContext,
   name: string,
   sourcePath: string,
   category: string | undefined,
@@ -520,6 +631,7 @@ async function validateLocalMarketplacePath(
   pointer: string,
 ): Promise<LocalCatalogEntry | undefined> {
   const pluginPath = resolveRelativePath(
+    context,
     sourcePath,
     marketplaceRoot,
     marketplacePath,
@@ -533,6 +645,7 @@ async function validateLocalMarketplacePath(
 
   if (!(await isDirectory(pluginPath))) {
     error(
+      context,
       "marketplace/source-exists",
       marketplacePath,
       `Plugin path does not exist or is not a directory: ${sourcePath}`,
@@ -544,6 +657,7 @@ async function validateLocalMarketplacePath(
   const manifestPath = path.join(pluginPath, ".codex-plugin", "plugin.json");
   if (!(await isFile(manifestPath))) {
     error(
+      context,
       "marketplace/source-manifest",
       marketplacePath,
       `Plugin path is missing .codex-plugin/plugin.json: ${sourcePath}`,
@@ -556,19 +670,27 @@ async function validateLocalMarketplacePath(
 }
 
 function validateRemoteMarketplaceSource(
+  context: ValidationContext,
   source: JsonObject,
   sourceType: string,
   marketplacePath: string,
   pluginPointer: string,
 ): void {
   const sourcePointer = `${pluginPointer}/source`;
-  const url = getString(source, "url", marketplacePath, `${sourcePointer}/url`);
-  validateGitUrlString(url, marketplacePath, `${sourcePointer}/url`);
+  const url = getString(context, source, "url", marketplacePath, `${sourcePointer}/url`);
+  validateGitUrlString(context, url, marketplacePath, `${sourcePointer}/url`);
 
-  const pathValue = getOptionalString(source, "path", marketplacePath, `${sourcePointer}/path`);
+  const pathValue = getOptionalString(
+    context,
+    source,
+    "path",
+    marketplacePath,
+    `${sourcePointer}/path`,
+  );
   if (sourceType === "git-subdir") {
     if (pathValue === undefined) {
       error(
+        context,
         "marketplace/git-subdir-path",
         marketplacePath,
         'Expected git-subdir source to include a "./"-prefixed path.',
@@ -576,8 +698,9 @@ function validateRemoteMarketplaceSource(
       );
     } else {
       resolveRelativePath(
+        context,
         pathValue,
-        repoRoot,
+        context.repoRoot,
         marketplacePath,
         `${sourcePointer}/path`,
         "marketplace/git-subdir-path",
@@ -585,10 +708,11 @@ function validateRemoteMarketplaceSource(
     }
   }
 
-  const ref = getOptionalString(source, "ref", marketplacePath, `${sourcePointer}/ref`);
-  const sha = getOptionalString(source, "sha", marketplacePath, `${sourcePointer}/sha`);
+  const ref = getOptionalString(context, source, "ref", marketplacePath, `${sourcePointer}/ref`);
+  const sha = getOptionalString(context, source, "sha", marketplacePath, `${sourcePointer}/sha`);
   if (ref !== undefined && sha !== undefined) {
     error(
+      context,
       "marketplace/ref-or-sha",
       marketplacePath,
       "Use either source.ref or source.sha, not both.",
@@ -597,25 +721,41 @@ function validateRemoteMarketplaceSource(
   }
 }
 
-async function validatePlugin(entry: LocalCatalogEntry): Promise<JsonObject | undefined> {
-  const manifest = await readJsonObject(entry.manifestPath);
+async function validatePlugin(
+  context: ValidationContext,
+  entry: LocalCatalogEntry,
+): Promise<JsonObject | undefined> {
+  const manifest = await readJsonObject(context, entry.manifestPath);
 
   if (manifest === undefined) {
     return undefined;
   }
 
-  const manifestName = getString(manifest, "name", entry.manifestPath, "/name");
-  getString(manifest, "version", entry.manifestPath, "/version");
-  getString(manifest, "description", entry.manifestPath, "/description");
+  const manifestName = getString(context, manifest, "name", entry.manifestPath, "/name");
+  getString(context, manifest, "version", entry.manifestPath, "/version");
+  getString(context, manifest, "description", entry.manifestPath, "/description");
 
-  const repository = getOptionalString(manifest, "repository", entry.manifestPath, "/repository");
-  validateUrlString(repository, entry.manifestPath, "/repository", "url/http");
+  const repository = getOptionalString(
+    context,
+    manifest,
+    "repository",
+    entry.manifestPath,
+    "/repository",
+  );
+  validateUrlString(context, repository, entry.manifestPath, "/repository", "url/http");
 
-  const homepage = getOptionalString(manifest, "homepage", entry.manifestPath, "/homepage");
-  validateUrlString(homepage, entry.manifestPath, "/homepage", "url/http");
+  const homepage = getOptionalString(
+    context,
+    manifest,
+    "homepage",
+    entry.manifestPath,
+    "/homepage",
+  );
+  validateUrlString(context, homepage, entry.manifestPath, "/homepage", "url/http");
 
   if (manifestName !== undefined && manifestName !== entry.name) {
     error(
+      context,
       "alignment/name",
       entry.manifestPath,
       `Manifest name "${manifestName}" does not match marketplace name "${entry.name}".`,
@@ -625,6 +765,7 @@ async function validatePlugin(entry: LocalCatalogEntry): Promise<JsonObject | un
 
   if (manifestName !== undefined && path.basename(entry.pluginPath) !== manifestName) {
     error(
+      context,
       "alignment/directory-name",
       entry.manifestPath,
       `Plugin directory "${path.basename(entry.pluginPath)}" does not match manifest name "${manifestName}".`,
@@ -632,44 +773,69 @@ async function validatePlugin(entry: LocalCatalogEntry): Promise<JsonObject | un
     );
   }
 
-  const author = getOptionalObject(manifest, "author", entry.manifestPath, "/author");
+  const author = getOptionalObject(context, manifest, "author", entry.manifestPath, "/author");
   if (author !== undefined) {
-    getString(author, "name", entry.manifestPath, "/author/name");
-    const authorUrl = getOptionalString(author, "url", entry.manifestPath, "/author/url");
-    validateUrlString(authorUrl, entry.manifestPath, "/author/url", "url/http");
-    getOptionalString(author, "email", entry.manifestPath, "/author/email");
+    getString(context, author, "name", entry.manifestPath, "/author/name");
+    const authorUrl = getOptionalString(context, author, "url", entry.manifestPath, "/author/url");
+    validateUrlString(context, authorUrl, entry.manifestPath, "/author/url", "url/http");
+    getOptionalString(context, author, "email", entry.manifestPath, "/author/email");
   }
 
-  getOptionalString(manifest, "license", entry.manifestPath, "/license");
-  validateStringArray(manifest.keywords, "keywords", entry.manifestPath, "/keywords", {
+  getOptionalString(context, manifest, "license", entry.manifestPath, "/license");
+  validateStringArray(context, manifest.keywords, "keywords", entry.manifestPath, "/keywords", {
     required: false,
   });
 
   const manifestInterface = getOptionalObject(
+    context,
     manifest,
     "interface",
     entry.manifestPath,
     "/interface",
   );
   if (manifestInterface !== undefined) {
-    validatePluginInterface(manifestInterface, entry);
+    validatePluginInterface(context, manifestInterface, entry);
   }
 
-  await validateComponentPaths(manifest, entry);
+  await validateComponentPaths(context, manifest, entry);
   return manifest;
 }
 
-function validatePluginInterface(manifestInterface: JsonObject, entry: LocalCatalogEntry): void {
-  getString(manifestInterface, "displayName", entry.manifestPath, "/interface/displayName");
+function validatePluginInterface(
+  context: ValidationContext,
+  manifestInterface: JsonObject,
+  entry: LocalCatalogEntry,
+): void {
   getString(
+    context,
+    manifestInterface,
+    "displayName",
+    entry.manifestPath,
+    "/interface/displayName",
+  );
+  getString(
+    context,
     manifestInterface,
     "shortDescription",
     entry.manifestPath,
     "/interface/shortDescription",
   );
-  getString(manifestInterface, "longDescription", entry.manifestPath, "/interface/longDescription");
-  getString(manifestInterface, "developerName", entry.manifestPath, "/interface/developerName");
+  getString(
+    context,
+    manifestInterface,
+    "longDescription",
+    entry.manifestPath,
+    "/interface/longDescription",
+  );
+  getString(
+    context,
+    manifestInterface,
+    "developerName",
+    entry.manifestPath,
+    "/interface/developerName",
+  );
   const interfaceCategory = getString(
+    context,
     manifestInterface,
     "category",
     entry.manifestPath,
@@ -682,6 +848,7 @@ function validatePluginInterface(manifestInterface: JsonObject, entry: LocalCata
     entry.category !== interfaceCategory
   ) {
     error(
+      context,
       "alignment/category",
       entry.manifestPath,
       `Plugin interface category "${interfaceCategory}" does not match marketplace category "${entry.category}".`,
@@ -690,6 +857,7 @@ function validatePluginInterface(manifestInterface: JsonObject, entry: LocalCata
   }
 
   validateStringArray(
+    context,
     manifestInterface.capabilities,
     "interface.capabilities",
     entry.manifestPath,
@@ -697,6 +865,7 @@ function validatePluginInterface(manifestInterface: JsonObject, entry: LocalCata
     { required: true },
   );
   validateStringArray(
+    context,
     manifestInterface.defaultPrompt,
     "interface.defaultPrompt",
     entry.manifestPath,
@@ -706,15 +875,17 @@ function validatePluginInterface(manifestInterface: JsonObject, entry: LocalCata
 
   for (const fieldName of ["websiteURL", "privacyPolicyURL", "termsOfServiceURL"]) {
     const url = getOptionalString(
+      context,
       manifestInterface,
       fieldName,
       entry.manifestPath,
       `/interface/${fieldName}`,
     );
-    validateUrlString(url, entry.manifestPath, `/interface/${fieldName}`, "url/http");
+    validateUrlString(context, url, entry.manifestPath, `/interface/${fieldName}`, "url/http");
   }
 
   const brandColor = getOptionalString(
+    context,
     manifestInterface,
     "brandColor",
     entry.manifestPath,
@@ -722,6 +893,7 @@ function validatePluginInterface(manifestInterface: JsonObject, entry: LocalCata
   );
   if (brandColor !== undefined && !/^#[0-9a-fA-F]{6}$/.test(brandColor)) {
     error(
+      context,
       "manifest/brand-color",
       entry.manifestPath,
       "Expected interface.brandColor to be a 6-digit hex color.",
@@ -731,6 +903,7 @@ function validatePluginInterface(manifestInterface: JsonObject, entry: LocalCata
 }
 
 async function validateComponentPaths(
+  context: ValidationContext,
   manifest: JsonObject,
   entry: LocalCatalogEntry,
 ): Promise<void> {
@@ -774,6 +947,7 @@ async function validateComponentPaths(
 
     if (manifestInterface.screenshots !== undefined) {
       const screenshots = validateStringArray(
+        context,
         manifestInterface.screenshots,
         "interface.screenshots",
         entry.manifestPath,
@@ -793,11 +967,12 @@ async function validateComponentPaths(
     }
   }
 
-  await validateManifestPathRules(pathRules, entry);
-  await validateHooksPath(manifest.hooks, entry);
+  await validateManifestPathRules(context, pathRules, entry);
+  await validateHooksPath(context, manifest.hooks, entry);
 }
 
 async function validateManifestPathRules(
+  context: ValidationContext,
   pathRules: ComponentPathRule[],
   entry: LocalCatalogEntry,
 ): Promise<void> {
@@ -805,6 +980,7 @@ async function validateManifestPathRules(
     if (rule.value === undefined) {
       if (rule.fieldName === "skills") {
         error(
+          context,
           "manifest/required-path",
           entry.manifestPath,
           'Expected "skills" to be provided.',
@@ -816,6 +992,7 @@ async function validateManifestPathRules(
 
     if (typeof rule.value !== "string" || rule.value.length === 0) {
       error(
+        context,
         "manifest/path-type",
         entry.manifestPath,
         `Expected "${rule.fieldName}" to be a non-empty string path.`,
@@ -825,6 +1002,7 @@ async function validateManifestPathRules(
     }
 
     const resolved = resolveRelativePath(
+      context,
       rule.value,
       entry.pluginPath,
       entry.manifestPath,
@@ -837,6 +1015,7 @@ async function validateManifestPathRules(
 
     if (rule.expectedKind === "directory" && !(await isDirectory(resolved))) {
       error(
+        context,
         "manifest/path-exists",
         entry.manifestPath,
         `Expected "${rule.fieldName}" to point to an existing directory: ${rule.value}`,
@@ -846,6 +1025,7 @@ async function validateManifestPathRules(
 
     if (rule.expectedKind === "file" && !(await isFile(resolved))) {
       error(
+        context,
         "manifest/path-exists",
         entry.manifestPath,
         `Expected "${rule.fieldName}" to point to an existing file: ${rule.value}`,
@@ -855,13 +1035,18 @@ async function validateManifestPathRules(
   }
 }
 
-async function validateHooksPath(value: unknown, entry: LocalCatalogEntry): Promise<void> {
+async function validateHooksPath(
+  context: ValidationContext,
+  value: unknown,
+  entry: LocalCatalogEntry,
+): Promise<void> {
   if (value === undefined) {
     return;
   }
 
   if (typeof value === "string") {
     await validateManifestPathRules(
+      context,
       [{ expectedKind: "file", fieldName: "hooks", pointer: "/hooks", value }],
       entry,
     );
@@ -872,6 +1057,7 @@ async function validateHooksPath(value: unknown, entry: LocalCatalogEntry): Prom
     for (const [index, item] of value.entries()) {
       if (typeof item === "string") {
         await validateManifestPathRules(
+          context,
           [
             {
               expectedKind: "file",
@@ -884,6 +1070,7 @@ async function validateHooksPath(value: unknown, entry: LocalCatalogEntry): Prom
         );
       } else if (!isObject(item)) {
         error(
+          context,
           "manifest/hooks",
           entry.manifestPath,
           "Expected hooks array items to be file paths or inline lifecycle objects.",
@@ -896,6 +1083,7 @@ async function validateHooksPath(value: unknown, entry: LocalCatalogEntry): Prom
 
   if (!isObject(value)) {
     error(
+      context,
       "manifest/hooks",
       entry.manifestPath,
       "Expected hooks to be a file path, inline lifecycle object, or array of those values.",
@@ -905,11 +1093,13 @@ async function validateHooksPath(value: unknown, entry: LocalCatalogEntry): Prom
 }
 
 async function validateSkillsForEntry(
+  context: ValidationContext,
   entry: LocalCatalogEntry,
   manifest: JsonObject,
 ): Promise<void> {
   const skillsReference = typeof manifest.skills === "string" ? manifest.skills : "./skills/";
   const skillsPath = resolveRelativePath(
+    context,
     skillsReference,
     entry.pluginPath,
     entry.manifestPath,
@@ -921,10 +1111,10 @@ async function validateSkillsForEntry(
     return;
   }
 
-  await validateSkills(skillsPath);
+  await validateSkills(context, skillsPath);
 }
 
-async function validateSkills(skillsPath: string): Promise<void> {
+async function validateSkills(context: ValidationContext, skillsPath: string): Promise<void> {
   const entries = await readdir(skillsPath, { withFileTypes: true });
   const skillDirs = entries
     .filter((entry) => entry.isDirectory())
@@ -932,57 +1122,92 @@ async function validateSkills(skillsPath: string): Promise<void> {
     .sort();
 
   if (skillDirs.length === 0) {
-    error("skills/non-empty", skillsPath, "Expected at least one skill directory.");
+    error(context, "skills/non-empty", skillsPath, "Expected at least one skill directory.");
   }
 
   for (const skillName of skillDirs) {
     const skillPath = path.join(skillsPath, skillName);
-    await validateSkill(skillName, skillPath);
+    await validateSkill(context, skillName, skillPath);
   }
 }
 
-async function validateSkill(skillName: string, skillPath: string): Promise<void> {
+async function validateSkill(
+  context: ValidationContext,
+  skillName: string,
+  skillPath: string,
+): Promise<void> {
   const skillFilePath = path.join(skillPath, "SKILL.md");
   if (!(await pathExists(skillFilePath))) {
-    error("skill/missing-file", skillFilePath, "Missing SKILL.md.");
+    error(context, "skill/missing-file", skillFilePath, "Missing SKILL.md.");
     return;
   }
 
-  await validateSkillFrontmatter(skillName, skillFilePath);
+  await validateSkillFrontmatter(context, skillName, skillFilePath);
   const metadataPath = path.join(skillPath, "agents", "openai.yaml");
   if (await pathExists(metadataPath)) {
-    await validateOpenAiMetadata(skillName, metadataPath);
+    await validateOpenAiMetadata(context, skillName, metadataPath);
   }
 }
 
-async function validateSkillFrontmatter(skillName: string, skillFilePath: string): Promise<void> {
+async function validateSkillFrontmatter(
+  context: ValidationContext,
+  skillName: string,
+  skillFilePath: string,
+): Promise<void> {
   const content = await readFile(skillFilePath, "utf8");
   const frontmatter = content.match(/^---\n(?<yaml>[\s\S]*?)\n---\n/);
 
   if (frontmatter?.groups?.yaml === undefined) {
-    error("skill/frontmatter", skillFilePath, "Missing YAML frontmatter.");
+    error(context, "skill/frontmatter", skillFilePath, "Missing YAML frontmatter.");
     return;
   }
 
-  const parsed: unknown = parseYaml(frontmatter.groups.yaml);
+  let parsed: unknown;
+  try {
+    parsed = parseYaml(frontmatter.groups.yaml);
+  } catch (parseError) {
+    error(
+      context,
+      "parse/yaml",
+      skillFilePath,
+      `Unable to parse YAML frontmatter: ${errorMessage(parseError)}`,
+      "/frontmatter",
+    );
+    return;
+  }
+
   if (!isObject(parsed)) {
-    error("skill/frontmatter", skillFilePath, "Expected frontmatter to be an object.");
+    error(context, "skill/frontmatter", skillFilePath, "Expected frontmatter to be an object.");
     return;
   }
 
-  const name = getString(parsed, "name", skillFilePath, "/frontmatter/name");
-  const description = getString(parsed, "description", skillFilePath, "/frontmatter/description");
-  const license = getOptionalString(parsed, "license", skillFilePath, "/frontmatter/license");
+  const name = getString(context, parsed, "name", skillFilePath, "/frontmatter/name");
+  const description = getString(
+    context,
+    parsed,
+    "description",
+    skillFilePath,
+    "/frontmatter/description",
+  );
+  const license = getOptionalString(
+    context,
+    parsed,
+    "license",
+    skillFilePath,
+    "/frontmatter/license",
+  );
   const compatibility = getOptionalString(
+    context,
     parsed,
     "compatibility",
     skillFilePath,
     "/frontmatter/compatibility",
   );
-  getOptionalString(parsed, "allowed-tools", skillFilePath, "/frontmatter/allowed-tools");
+  getOptionalString(context, parsed, "allowed-tools", skillFilePath, "/frontmatter/allowed-tools");
 
   if (name !== undefined && name !== skillName) {
     error(
+      context,
       "skill/name",
       skillFilePath,
       `Frontmatter name "${name}" does not match directory "${skillName}".`,
@@ -992,6 +1217,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
 
   if (name !== undefined && !/^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/.test(name)) {
     error(
+      context,
       "skill/name-format",
       skillFilePath,
       'Frontmatter "name" must be 1-64 lowercase letters, numbers, or hyphens.',
@@ -1001,6 +1227,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
 
   if (name !== undefined && name.includes("--")) {
     error(
+      context,
       "skill/name-format",
       skillFilePath,
       'Frontmatter "name" must not contain consecutive hyphens.',
@@ -1010,6 +1237,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
 
   if (description !== undefined && description.length > 1024) {
     error(
+      context,
       "skill/description-length",
       skillFilePath,
       'Frontmatter "description" must be 1024 characters or fewer.',
@@ -1019,6 +1247,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
 
   if (license !== undefined && license.length > 200) {
     error(
+      context,
       "skill/license-length",
       skillFilePath,
       'Frontmatter "license" should be a short license name or file reference.',
@@ -1028,6 +1257,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
 
   if (compatibility !== undefined && compatibility.length > 500) {
     error(
+      context,
       "skill/compatibility-length",
       skillFilePath,
       'Frontmatter "compatibility" must be 500 characters or fewer.',
@@ -1037,6 +1267,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
 
   if (Object.hasOwn(parsed, "disable-model-invocation")) {
     error(
+      context,
       "skill/unsupported-key",
       skillFilePath,
       'Unsupported frontmatter key "disable-model-invocation"; use agents/openai.yaml policy.allow_implicit_invocation instead.',
@@ -1048,6 +1279,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
   if (metadata !== undefined) {
     if (!isObject(metadata)) {
       error(
+        context,
         "skill/metadata",
         skillFilePath,
         'Expected frontmatter "metadata" to be an object when provided.',
@@ -1059,6 +1291,7 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
     for (const [key, value] of Object.entries(metadata)) {
       if (typeof value !== "string") {
         error(
+          context,
           "skill/metadata",
           skillFilePath,
           `Expected frontmatter "metadata.${key}" to be a string.`,
@@ -1069,21 +1302,37 @@ async function validateSkillFrontmatter(skillName: string, skillFilePath: string
   }
 }
 
-async function validateOpenAiMetadata(skillName: string, metadataPath: string): Promise<void> {
-  const metadata = await readYamlObject(metadataPath);
+async function validateOpenAiMetadata(
+  context: ValidationContext,
+  skillName: string,
+  metadataPath: string,
+): Promise<void> {
+  const metadata = await readYamlObject(context, metadataPath);
 
   if (metadata === undefined) {
     return;
   }
 
   if (metadata.version !== 1) {
-    error("openai-metadata/version", metadataPath, 'Expected "version" to be 1.', "/version");
+    error(
+      context,
+      "openai-metadata/version",
+      metadataPath,
+      'Expected "version" to be 1.',
+      "/version",
+    );
   }
 
-  const metadataInterface = getObject(metadata, "interface", metadataPath, "/interface");
+  const metadataInterface = getObject(context, metadata, "interface", metadataPath, "/interface");
   if (metadataInterface !== undefined) {
-    getString(metadataInterface, "display_name", metadataPath, "/interface/display_name");
-    getString(metadataInterface, "short_description", metadataPath, "/interface/short_description");
+    getString(context, metadataInterface, "display_name", metadataPath, "/interface/display_name");
+    getString(
+      context,
+      metadataInterface,
+      "short_description",
+      metadataPath,
+      "/interface/short_description",
+    );
     const defaultPrompt = metadataInterface.default_prompt;
     const isValidPrompt =
       typeof defaultPrompt === "string" ||
@@ -1092,6 +1341,7 @@ async function validateOpenAiMetadata(skillName: string, metadataPath: string): 
 
     if (!isValidPrompt) {
       error(
+        context,
         "openai-metadata/default-prompt",
         metadataPath,
         'Expected "interface.default_prompt" to be a string or string array.',
@@ -1100,9 +1350,10 @@ async function validateOpenAiMetadata(skillName: string, metadataPath: string): 
     }
   }
 
-  const policy = getObject(metadata, "policy", metadataPath, "/policy");
+  const policy = getObject(context, metadata, "policy", metadataPath, "/policy");
   if (policy !== undefined) {
     getBoolean(
+      context,
       policy,
       "allow_implicit_invocation",
       metadataPath,
@@ -1113,6 +1364,7 @@ async function validateOpenAiMetadata(skillName: string, metadataPath: string): 
   const frontmatterName = path.basename(path.dirname(path.dirname(metadataPath)));
   if (frontmatterName !== skillName) {
     error(
+      context,
       "openai-metadata/path",
       metadataPath,
       `Metadata path does not match skill directory "${skillName}".`,
@@ -1120,7 +1372,10 @@ async function validateOpenAiMetadata(skillName: string, metadataPath: string): 
   }
 }
 
-async function validateCatalogCoverage(catalog: Catalog): Promise<void> {
+async function validateCatalogCoverage(
+  context: ValidationContext,
+  catalog: Catalog,
+): Promise<void> {
   const catalogPaths = new Set(
     [...catalog.localEntries.values()].map((entry) => path.resolve(entry.pluginPath)),
   );
@@ -1128,12 +1383,12 @@ async function validateCatalogCoverage(catalog: Catalog): Promise<void> {
     ...catalog.localEntries.keys(),
     ...catalog.remoteEntries.map((entry) => entry.name),
   ]);
-  const manifests = await findPluginManifests(repoRoot);
+  const manifests = await findPluginManifests(context.repoRoot);
 
   for (const manifestPath of manifests) {
     const pluginPath = path.dirname(path.dirname(manifestPath));
     if (!catalogPaths.has(pluginPath)) {
-      const manifest = await readJsonObject(manifestPath);
+      const manifest = await readJsonObject(context, manifestPath);
       const manifestName =
         manifest !== undefined && typeof manifest.name === "string"
           ? manifest.name
@@ -1142,6 +1397,7 @@ async function validateCatalogCoverage(catalog: Catalog): Promise<void> {
         ? ` Marketplace has "${manifestName}", but it points somewhere else.`
         : "";
       error(
+        context,
         "coverage/manifest-listed",
         manifestPath,
         `Plugin manifest is missing from the marketplace catalog.${nameHint}`,
@@ -1176,10 +1432,11 @@ async function findPluginManifests(searchRoot: string): Promise<string[]> {
 }
 
 async function validateExternalReferences(
+  context: ValidationContext,
   catalog: Catalog,
   manifestsByPath: Map<string, JsonObject>,
 ): Promise<void> {
-  if (!externalValidationEnabled) {
+  if (!context.externalValidationEnabled) {
     return;
   }
 
@@ -1189,7 +1446,7 @@ async function validateExternalReferences(
       continue;
     }
 
-    await validateGitRemote(url, catalog.marketplacePath, `${entry.pointer}/source/url`);
+    await validateGitRemote(context, url, catalog.marketplacePath, `${entry.pointer}/source/url`);
 
     const selector =
       typeof entry.source.sha === "string"
@@ -1199,6 +1456,7 @@ async function validateExternalReferences(
           : undefined;
     if (selector !== undefined) {
       await validateGitRemote(
+        context,
         url,
         catalog.marketplacePath,
         `${entry.pointer}/source/url`,
@@ -1213,18 +1471,19 @@ async function validateExternalReferences(
       continue;
     }
 
-    await validateReachableUrl(manifest.repository, entry.manifestPath, "/repository");
-    await validateReachableUrl(manifest.homepage, entry.manifestPath, "/homepage");
+    await validateReachableUrl(context, manifest.repository, entry.manifestPath, "/repository");
+    await validateReachableUrl(context, manifest.homepage, entry.manifestPath, "/homepage");
 
     const author = isObject(manifest.author) ? manifest.author : undefined;
     if (author !== undefined) {
-      await validateReachableUrl(author.url, entry.manifestPath, "/author/url");
+      await validateReachableUrl(context, author.url, entry.manifestPath, "/author/url");
     }
 
     const manifestInterface = isObject(manifest.interface) ? manifest.interface : undefined;
     if (manifestInterface !== undefined) {
       for (const fieldName of ["websiteURL", "privacyPolicyURL", "termsOfServiceURL"]) {
         await validateReachableUrl(
+          context,
           manifestInterface[fieldName],
           entry.manifestPath,
           `/interface/${fieldName}`,
@@ -1235,6 +1494,7 @@ async function validateExternalReferences(
 }
 
 async function validateReachableUrl(
+  context: ValidationContext,
   value: unknown,
   filePath: string,
   pointer: string,
@@ -1243,7 +1503,7 @@ async function validateReachableUrl(
     return;
   }
 
-  const parsedUrl = parseHttpUrlString(value, filePath, pointer, "url/http");
+  const parsedUrl = parseHttpUrlString(context, value, filePath, pointer, "url/http");
   if (parsedUrl === undefined) {
     return;
   }
@@ -1258,6 +1518,7 @@ async function validateReachableUrl(
   }
 
   warning(
+    context,
     "external/url-reachable",
     filePath,
     `URL did not respond successfully: ${value}`,
@@ -1284,6 +1545,7 @@ async function fetchUrl(url: URL, method: "GET" | "HEAD"): Promise<boolean> {
 }
 
 async function validateGitRemote(
+  context: ValidationContext,
   url: string,
   filePath: string,
   pointer: string,
@@ -1295,6 +1557,7 @@ async function validateGitRemote(
     const result = await execFileAsync("git", args, { timeout: 15_000 });
     if (selector !== undefined && result.stdout.trim().length === 0) {
       warning(
+        context,
         "external/git-selector",
         filePath,
         `Git remote did not contain selector "${selector}": ${url}`,
@@ -1302,14 +1565,21 @@ async function validateGitRemote(
       );
     }
   } catch {
-    warning("external/git-reachable", filePath, `Git remote was not reachable: ${url}`, pointer);
+    warning(
+      context,
+      "external/git-reachable",
+      filePath,
+      `Git remote was not reachable: ${url}`,
+      pointer,
+    );
   }
 }
 
-function validateLocalRepositoryAlignment(catalog: Catalog): void {
+function validateLocalRepositoryAlignment(context: ValidationContext, catalog: Catalog): void {
   for (const entry of catalog.localEntries.values()) {
     if (entry.sourcePath !== `./plugins/${entry.name}`) {
       warning(
+        context,
         "alignment/source-path",
         catalog.marketplacePath,
         `Local source path usually matches "./plugins/<name>"; found "${entry.sourcePath}".`,
@@ -1319,16 +1589,17 @@ function validateLocalRepositoryAlignment(catalog: Catalog): void {
   }
 }
 
-function printDiagnostics(): void {
-  const sortedDiagnostics = diagnostics.sort((left, right) =>
-    relativeDisplay(left.filePath, left.pointer).localeCompare(
-      relativeDisplay(right.filePath, right.pointer),
+function printDiagnostics(context: ValidationContext): void {
+  const sortedDiagnostics = context.diagnostics.sort((left, right) =>
+    relativeDisplay(context, left.filePath, left.pointer).localeCompare(
+      relativeDisplay(context, right.filePath, right.pointer),
     ),
   );
 
   for (const diagnostic of sortedDiagnostics) {
     console.error(
       `- ${diagnostic.severity.toUpperCase()} ${diagnostic.ruleId} ${relativeDisplay(
+        context,
         diagnostic.filePath,
         diagnostic.pointer,
       )}: ${diagnostic.message}`,
@@ -1337,34 +1608,37 @@ function printDiagnostics(): void {
 }
 
 async function main(): Promise<void> {
-  const catalog = await validateMarketplace();
+  const context = createValidationContext();
+  const catalog = await validateMarketplace(context);
   const manifestsByPath = new Map<string, JsonObject>();
-  validateLocalRepositoryAlignment(catalog);
-  await validateCatalogCoverage(catalog);
+  validateLocalRepositoryAlignment(context, catalog);
+  await validateCatalogCoverage(context, catalog);
 
   for (const entry of catalog.localEntries.values()) {
-    const manifest = await validatePlugin(entry);
+    const manifest = await validatePlugin(context, entry);
     if (manifest !== undefined) {
       manifestsByPath.set(entry.manifestPath, manifest);
-      await validateSkillsForEntry(entry, manifest);
+      await validateSkillsForEntry(context, entry, manifest);
     }
   }
 
-  await validateExternalReferences(catalog, manifestsByPath);
+  await validateExternalReferences(context, catalog, manifestsByPath);
 
-  const errorCount = diagnostics.filter((diagnostic) => diagnostic.severity === "error").length;
-  const warningCount = diagnostics.length - errorCount;
-  if (diagnostics.length > 0) {
+  const errorCount = context.diagnostics.filter(
+    (diagnostic) => diagnostic.severity === "error",
+  ).length;
+  const warningCount = context.diagnostics.length - errorCount;
+  if (context.diagnostics.length > 0) {
     const status = errorCount > 0 ? "failed" : "completed";
     console.error(
       `Plugin lint ${status} with ${errorCount} error(s) and ${warningCount} warning(s):`,
     );
-    printDiagnostics();
+    printDiagnostics(context);
     process.exitCode = errorCount > 0 ? 1 : 0;
     return;
   }
 
-  const externalLabel = externalValidationEnabled ? " with external checks" : "";
+  const externalLabel = context.externalValidationEnabled ? " with external checks" : "";
   console.log(`Linted ${catalog.localEntries.size} local plugin(s)${externalLabel}.`);
 }
 

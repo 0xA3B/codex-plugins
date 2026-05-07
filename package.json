@@ -8,8 +8,8 @@
     "lint": "oxlint --deny-warnings",
     "lint-staged": "lint-staged",
     "lint:fix": "oxlint --fix",
-    "lint:plugins": "tsx scripts/lint-plugins.ts",
-    "lint:plugins:external": "tsx scripts/lint-plugins.ts --external",
+    "lint:plugins": "tsx src/lint-plugins/cli.ts",
+    "lint:plugins:external": "tsx src/lint-plugins/cli.ts --external",
     "prepare": "husky",
     "typecheck": "tsc --noEmit"
   },

@@ -2,15 +2,16 @@
   "name": "codex-plugins",
   "private": true,
   "scripts": {
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm validate:plugins",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm lint:plugins",
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
     "lint": "oxlint --deny-warnings",
     "lint-staged": "lint-staged",
     "lint:fix": "oxlint --fix",
+    "lint:plugins": "tsx scripts/lint-plugins.ts",
+    "lint:plugins:external": "tsx scripts/lint-plugins.ts --external",
     "prepare": "husky",
-    "typecheck": "tsc --noEmit",
-    "validate:plugins": "tsx scripts/validate-plugins.ts"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.0",

@@ -52,7 +52,7 @@ is not clearly caused by this change, report the blocker and the safest next act
 8. Run validation:
 
    ```bash
-   pnpm validate:plugins
+   pnpm lint:plugins
    pnpm format:check
    ```
 

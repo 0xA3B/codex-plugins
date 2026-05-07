@@ -1,7 +1,0 @@
-version: 1
-interface:
-  display_name: "Validate Plugin"
-  short_description: "Validate marketplace plugins"
-  default_prompt: "Use $validate-plugin to validate marketplace plugin changes."
-policy:
-  allow_implicit_invocation: false

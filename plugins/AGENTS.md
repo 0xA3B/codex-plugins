@@ -49,7 +49,7 @@ These instructions apply to plugin directories under `plugins/`.
 
 ## Validation
 
-- Run `pnpm validate:plugins` after adding or changing plugin manifests, marketplace entries, skill
+- Run `pnpm lint:plugins` after adding or changing plugin manifests, marketplace entries, skill
   frontmatter, or `agents/openai.yaml`.
 - Run `pnpm format:check` when Markdown, JSON, YAML, or TypeScript files changed.
 - Run `pnpm lint` and `pnpm typecheck` when TypeScript validation tooling changed.

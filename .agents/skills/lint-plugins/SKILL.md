@@ -1,14 +1,14 @@
 ---
-name: validate-plugin
+name: lint-plugins
 description:
-  Validates Codex marketplace plugin structure, manifests, skill metadata, formatting, linting, and
-  type checks in this repository. Use when the user asks to check a plugin, verify metadata, run
-  plugin linting, or confirm plugin changes are ready.
+  Lints Codex marketplace plugin structure, manifests, skill metadata, formatting, linting, and type
+  checks in this repository. Use when the user asks to check a plugin, verify metadata, run plugin
+  linting, or confirm plugin changes are ready.
 ---
 
-# Validate Plugin
+# Lint Plugins
 
-Repo-local workflow for validating plugin and skill-authoring changes.
+Repo-local workflow for linting plugin and skill-authoring changes.
 
 ## Outcome
 
@@ -20,22 +20,22 @@ product decision, report it without broadening the change.
 
 ## Source Of Truth
 
-- `pnpm validate:plugins` validates the marketplace catalog, plugin manifests, skill frontmatter,
-  and skill `agents/openai.yaml` metadata.
+- `pnpm lint:plugins` lints the marketplace catalog, plugin manifests, skill frontmatter, and skill
+  `agents/openai.yaml` metadata.
 - `pnpm format:check` validates supported Markdown, JSON, YAML, and TypeScript formatting.
 - `pnpm lint` runs Oxlint on TypeScript.
 - `pnpm typecheck` runs TypeScript type checking.
-- `pnpm check` runs the full format, lint, typecheck, and plugin validation gate.
+- `pnpm check` runs the full format, lint, typecheck, and plugin linting gate.
 - `plugins/AGENTS.md` defines plugin structure and compatibility rules.
 
 ## Workflow
 
 1. Inspect current changes with `git status --short`.
 2. Choose checks from the files changed and the requested confidence level. Start with plugin
-   validation for plugin or skill metadata changes:
+   linting for plugin or skill metadata changes:
 
    ```bash
-   pnpm validate:plugins
+   pnpm lint:plugins
    ```
 
 3. Run format validation when Markdown, JSON, YAML, TypeScript, or skill files changed:

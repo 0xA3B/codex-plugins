@@ -43,7 +43,7 @@ report the remaining work instead of guessing.
 7. Run validation:
 
    ```bash
-   pnpm validate:plugins
+   pnpm lint:plugins
    pnpm format:check
    ```
 

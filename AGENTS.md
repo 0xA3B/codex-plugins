@@ -16,8 +16,8 @@ of personal skills.
 
 ## Development Commands
 
-- `pnpm exec oxfmt [--write, --check] ...`: Use oxfmt to format/check targeted files
-- `pnpm exec oxlint [--fix] ...`: Use oxlint to lint/fix targeted files
+- `pnpm exec -- oxfmt [--write, --check] ...`: Use oxfmt to format/check targeted files
+- `pnpm exec -- oxlint [--fix] ...`: Use oxlint to lint/fix targeted files
 - `pnpm check`: Run format, lint, typecheck, and plugin validation
 - `pnpm format`: Use oxfmt to format all supported filetypes in the repo
 - `pnpm format:check`: Use oxfmt to check all supported filetypes in the repo
@@ -28,3 +28,5 @@ of personal skills.
 ## Project Conventions
 
 - Commit messages must follow `conventional-commits:writing-conventional-commits`.
+- Commitlint inherits 100-character limits for commit body and footer lines; wrap multi-line commit
+  messages before running `git commit`.

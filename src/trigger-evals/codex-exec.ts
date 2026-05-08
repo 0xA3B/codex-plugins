@@ -81,59 +81,57 @@ export async function runCodexExec(options: CodexRunOptions): Promise<CodexRunRe
   };
 }
 
+type SpawnCodexResult = {
+  exitCode: number | null;
+  stdout: string;
+  stderr: string;
+  error?: string;
+};
+
 function spawnCodex(
   args: string[],
-  options: { CODEX_HOME: string; timeoutMs: number; abortSignal?: AbortSignal },
-): Promise<{ exitCode: number | null; stdout: string; stderr: string; error?: string }> {
+  options: {
+    CODEX_HOME: string;
+    timeoutMs: number;
+    abortSignal?: AbortSignal;
+  },
+): Promise<SpawnCodexResult> {
   return new Promise((resolve) => {
-    const child = spawn("codex", args, {
-      env: { ...process.env, CODEX_HOME: options.CODEX_HOME },
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    const stdoutChunks: Buffer[] = [];
-    const stderrChunks: Buffer[] = [];
-    let abortError: string | undefined;
-    const timeout = setTimeout(() => {
-      child.kill("SIGTERM");
-    }, options.timeoutMs);
-
-    const onAbort = (): void => {
-      abortError = "codex exec aborted.";
-      child.kill("SIGTERM");
-    };
-    if (options.abortSignal !== undefined) {
-      if (options.abortSignal.aborted) {
-        onAbort();
-      } else {
-        options.abortSignal.addEventListener("abort", onAbort, { once: true });
-      }
-    }
-
-    child.stdout.on("data", (chunk: Buffer) => stdoutChunks.push(chunk));
-    child.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
-    child.on("error", (caught) => {
-      clearTimeout(timeout);
-      options.abortSignal?.removeEventListener("abort", onAbort);
-      resolve({
-        exitCode: null,
-        stdout: Buffer.concat(stdoutChunks).toString("utf8"),
-        stderr: Buffer.concat(stderrChunks).toString("utf8"),
-        error: caught.message,
-      });
-    });
-    child.on("close", (exitCode) => {
-      clearTimeout(timeout);
-      options.abortSignal?.removeEventListener("abort", onAbort);
-      const timedOut = exitCode === null && abortError === undefined;
-      const error =
-        abortError ?? (timedOut ? `codex exec timed out after ${options.timeoutMs}ms.` : undefined);
+    const resolveResult = (exitCode: number | null, error?: string): void => {
       resolve({
         exitCode,
         stdout: Buffer.concat(stdoutChunks).toString("utf8"),
         stderr: Buffer.concat(stderrChunks).toString("utf8"),
         ...(error === undefined ? {} : { error }),
       });
+    };
+
+    const stdoutChunks: Buffer[] = [];
+    const stderrChunks: Buffer[] = [];
+    const child = spawn("codex", args, {
+      env: { ...process.env, CODEX_HOME: options.CODEX_HOME },
+      killSignal: "SIGTERM",
+      ...(options.abortSignal === undefined ? {} : { signal: options.abortSignal }),
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: options.timeoutMs,
+    });
+
+    child.stdout.on("data", (chunk: Buffer) => stdoutChunks.push(chunk));
+    child.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
+    child.on("error", (caught) => {
+      const error = options.abortSignal?.aborted === true ? "codex exec aborted." : caught.message;
+      resolveResult(null, error);
+    });
+
+    child.on("close", (exitCode, signal) => {
+      const aborted = options.abortSignal?.aborted === true;
+      const timedOut = exitCode === null && signal === "SIGTERM" && !aborted;
+      const error = aborted
+        ? "codex exec aborted."
+        : timedOut
+          ? `codex exec timed out after ${options.timeoutMs}ms.`
+          : undefined;
+      resolveResult(exitCode, error);
     });
   });
 }

@@ -18,17 +18,14 @@ export async function validateSkillFrontmatter(
   skillFilePath: string,
 ): Promise<void> {
   const content = await readFile(skillFilePath, "utf8");
-  const frontmatter = content.match(
-    /^---\r?\n(?<yaml>[\s\S]*?)\r?\n---(?:\r?\n(?<body>[\s\S]*))?$/,
-  );
+  const frontmatter = extractYamlFrontmatter(content);
 
-  if (frontmatter?.groups?.yaml === undefined) {
+  if (frontmatter === undefined) {
     error(context, "agentskills/frontmatter", skillFilePath, "Missing YAML frontmatter.");
     return;
   }
 
-  const body = frontmatter.groups.body ?? "";
-  if (body.trim().length === 0) {
+  if (frontmatter.body.trim().length === 0) {
     error(
       context,
       "agentskills/body",
@@ -37,11 +34,11 @@ export async function validateSkillFrontmatter(
     );
   }
 
-  validateRecommendedBodySize(context, skillFilePath, body);
+  validateRecommendedBodySize(context, skillFilePath, frontmatter.body);
 
   let parsed: unknown;
   try {
-    parsed = parseYaml(frontmatter.groups.yaml);
+    parsed = parseYaml(frontmatter.yaml);
   } catch (parseError) {
     error(
       context,
@@ -198,6 +195,23 @@ export async function validateSkillFrontmatter(
       }
     }
   }
+}
+
+function extractYamlFrontmatter(content: string): { yaml: string; body: string } | undefined {
+  const lines = content.split(/\r\n|\n|\r/);
+  if (lines[0] !== "---") {
+    return undefined;
+  }
+
+  const closingLineIndex = lines.indexOf("---", 1);
+  if (closingLineIndex === -1) {
+    return undefined;
+  }
+
+  return {
+    yaml: lines.slice(1, closingLineIndex).join("\n"),
+    body: lines.slice(closingLineIndex + 1).join("\n"),
+  };
 }
 
 function validateRecommendedBodySize(

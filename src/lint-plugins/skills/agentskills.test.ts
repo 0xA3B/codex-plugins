@@ -70,6 +70,32 @@ describe("Agent Skills frontmatter validation", () => {
     });
   });
 
+  it("extracts frontmatter from the opening yaml block only", async () => {
+    await withTempRepo(async (repoRoot) => {
+      const skillPath = await writeText(
+        repoRoot,
+        "skills/fenced/SKILL.md",
+        [
+          "---",
+          "name: fenced",
+          "description: Use when a test includes a thematic break.",
+          "---",
+          "# Fenced",
+          "",
+          "The body may include another standalone delimiter.",
+          "",
+          "---",
+          "",
+        ].join("\n"),
+      );
+      const context = createTestContext(repoRoot);
+
+      await validateSkillFrontmatter(context, "fenced", skillPath);
+
+      expect(context.diagnostics).toEqual([]);
+    });
+  });
+
   it("keeps repo-specific invocation policy out of SKILL.md", async () => {
     await withTempRepo(async (repoRoot) => {
       const skillPath = await writeText(

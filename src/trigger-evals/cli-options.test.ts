@@ -60,6 +60,15 @@ describe("parseTriggerEvalCliOptions", () => {
     ).toThrow("--timeout-ms must be a positive integer.");
   });
 
+  it("rejects partially numeric timeouts", () => {
+    expect(() =>
+      parseTriggerEvalCliOptions(["plugins/foo/skills/bar", "--timeout-ms", "100ms"]),
+    ).toThrow("--timeout-ms must be a positive integer.");
+    expect(() =>
+      parseTriggerEvalCliOptions(["plugins/foo/skills/bar", "--timeout-ms", "1.5"]),
+    ).toThrow("--timeout-ms must be a positive integer.");
+  });
+
   it("rejects unknown options", () => {
     expect(() => parseTriggerEvalCliOptions(["plugins/foo/skills/bar", "--verbose"])).toThrow(
       "Unknown option: --verbose",

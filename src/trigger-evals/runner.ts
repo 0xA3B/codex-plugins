@@ -75,7 +75,9 @@ export async function runTriggerEval(options: RunTriggerEvalOptions): Promise<Tr
 
       const invocationSignal = detectInvocation(codexResult, target);
       const invoked = invocationSignal !== "none";
-      const passed = testCase.expect === "invoke" ? invoked : !invoked;
+      const completed = codexResult.error === undefined && codexResult.exitCode === 0;
+      const matchedExpectation = testCase.expect === "invoke" ? invoked : !invoked;
+      const passed = completed && matchedExpectation;
       results.push({
         caseId: testCase.id,
         expect: testCase.expect,

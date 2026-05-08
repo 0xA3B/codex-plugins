@@ -33,10 +33,7 @@ export function parseTriggerEvalCliOptions(argv: string[]): RunTriggerEvalOption
     }
 
     if (arg === "--timeout-ms") {
-      options.timeoutMs = Number.parseInt(readOptionValue(argv, index, arg), 10);
-      if (!Number.isFinite(options.timeoutMs) || options.timeoutMs <= 0) {
-        throw new Error("--timeout-ms must be a positive integer.");
-      }
+      options.timeoutMs = parseTimeoutMs(readOptionValue(argv, index, arg));
       index += 1;
       continue;
     }
@@ -97,4 +94,17 @@ function readOptionValue(argv: string[], index: number, optionName: string): str
   }
 
   return value;
+}
+
+function parseTimeoutMs(value: string): number {
+  if (!/^[1-9]\d*$/.test(value)) {
+    throw new Error("--timeout-ms must be a positive integer.");
+  }
+
+  const timeoutMs = Number(value);
+  if (!Number.isSafeInteger(timeoutMs)) {
+    throw new Error("--timeout-ms must be a positive integer.");
+  }
+
+  return timeoutMs;
 }

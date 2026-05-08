@@ -22,8 +22,7 @@ export type ValidationOptions = {
 export function createValidationContext(options: ValidationOptions = {}): ValidationContext {
   return {
     diagnostics: [],
-    externalValidationEnabled:
-      options.externalValidationEnabled ?? process.argv.includes("--external"),
+    externalValidationEnabled: options.externalValidationEnabled ?? false,
     repoRoot: options.repoRoot ?? process.cwd(),
   };
 }

@@ -2,11 +2,12 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+import { stringify as stringifyYaml } from "yaml";
+
 import type { Diagnostic, ValidationContext } from "./diagnostics.js";
 import { createValidationContext } from "./diagnostics.js";
-import type { LocalCatalogEntry } from "./types.js";
+import type { JsonObject, LocalCatalogEntry } from "./types.js";
 
-type JsonObject = Record<string, unknown>;
 type MarketplacePlugin = {
   category: string;
   name: string;
@@ -209,53 +210,5 @@ export async function writeValidPluginRepo(
 }
 
 export function toYaml(value: JsonObject): string {
-  return `${Object.entries(value)
-    .map(([key, item]) => yamlLine(key, item, 0))
-    .join("")}`;
-}
-
-function yamlLine(key: string, value: unknown, depth: number): string {
-  const indent = "  ".repeat(depth);
-  if (isPlainObject(value)) {
-    return `${indent}${key}:\n${Object.entries(value)
-      .map(([nestedKey, nestedValue]) => yamlLine(nestedKey, nestedValue, depth + 1))
-      .join("")}`;
-  }
-
-  if (Array.isArray(value)) {
-    return `${indent}${key}:\n${value.map((item) => yamlArrayItem(item, depth + 1)).join("")}`;
-  }
-
-  return `${indent}${key}: ${yamlScalar(value)}\n`;
-}
-
-function yamlArrayItem(value: unknown, depth: number): string {
-  const indent = "  ".repeat(depth);
-  if (isPlainObject(value)) {
-    const entries = Object.entries(value);
-    const [firstKey, firstValue] = entries[0] ?? [];
-    if (firstKey === undefined) {
-      return `${indent}- {}\n`;
-    }
-
-    const rest = entries
-      .slice(1)
-      .map(([key, item]) => yamlLine(key, item, depth + 1))
-      .join("");
-    return `${indent}- ${firstKey}: ${yamlScalar(firstValue)}\n${rest}`;
-  }
-
-  return `${indent}- ${yamlScalar(value)}\n`;
-}
-
-function yamlScalar(value: unknown): string {
-  if (typeof value === "string") {
-    return JSON.stringify(value);
-  }
-
-  return String(value);
-}
-
-function isPlainObject(value: unknown): value is JsonObject {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+  return stringifyYaml(value);
 }

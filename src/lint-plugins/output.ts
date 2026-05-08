@@ -1,15 +1,20 @@
 import type { ValidationContext } from "./diagnostics.js";
 import { relativeDisplay } from "./paths.js";
 
-export function printDiagnostics(context: ValidationContext): void {
-  const sortedDiagnostics = context.diagnostics.sort((left, right) =>
+type DiagnosticWriter = (message: string) => void;
+
+export function printDiagnostics(
+  context: ValidationContext,
+  write: DiagnosticWriter = console.error,
+): void {
+  const sortedDiagnostics = [...context.diagnostics].sort((left, right) =>
     relativeDisplay(context, left.filePath, left.pointer).localeCompare(
       relativeDisplay(context, right.filePath, right.pointer),
     ),
   );
 
   for (const diagnostic of sortedDiagnostics) {
-    console.error(
+    write(
       `- ${diagnostic.severity.toUpperCase()} ${diagnostic.ruleId} ${relativeDisplay(
         context,
         diagnostic.filePath,

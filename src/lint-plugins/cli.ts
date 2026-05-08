@@ -2,4 +2,4 @@
 
 import { runCli } from "./runner.js";
 
-runCli();
+runCli({ externalValidationEnabled: process.argv.includes("--external") });

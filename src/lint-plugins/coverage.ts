@@ -64,6 +64,7 @@ export async function findPluginManifests(searchRoot: string): Promise<string[]>
   await visit(searchRoot);
   return manifests.sort();
 }
+
 export function validateLocalRepositoryAlignment(
   context: ValidationContext,
   catalog: Catalog,

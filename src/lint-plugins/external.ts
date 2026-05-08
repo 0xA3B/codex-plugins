@@ -18,13 +18,17 @@ export async function validateExternalReferences(
     return;
   }
 
+  const tasks: Promise<void>[] = [];
+
   for (const entry of catalog.remoteEntries) {
     const url = typeof entry.source.url === "string" ? entry.source.url : undefined;
     if (url === undefined) {
       continue;
     }
 
-    await validateGitRemote(context, url, catalog.marketplacePath, `${entry.pointer}/source/url`);
+    tasks.push(
+      validateGitRemote(context, url, catalog.marketplacePath, `${entry.pointer}/source/url`),
+    );
 
     const selector =
       typeof entry.source.sha === "string"
@@ -33,12 +37,14 @@ export async function validateExternalReferences(
           ? entry.source.ref
           : undefined;
     if (selector !== undefined) {
-      await validateGitRemote(
-        context,
-        url,
-        catalog.marketplacePath,
-        `${entry.pointer}/source/url`,
-        selector,
+      tasks.push(
+        validateGitRemote(
+          context,
+          url,
+          catalog.marketplacePath,
+          `${entry.pointer}/source/url`,
+          selector,
+        ),
       );
     }
   }
@@ -49,26 +55,32 @@ export async function validateExternalReferences(
       continue;
     }
 
-    await validateReachableUrl(context, manifest.repository, entry.manifestPath, "/repository");
-    await validateReachableUrl(context, manifest.homepage, entry.manifestPath, "/homepage");
+    tasks.push(
+      validateReachableUrl(context, manifest.repository, entry.manifestPath, "/repository"),
+      validateReachableUrl(context, manifest.homepage, entry.manifestPath, "/homepage"),
+    );
 
     const author = isObject(manifest.author) ? manifest.author : undefined;
     if (author !== undefined) {
-      await validateReachableUrl(context, author.url, entry.manifestPath, "/author/url");
+      tasks.push(validateReachableUrl(context, author.url, entry.manifestPath, "/author/url"));
     }
 
     const manifestInterface = isObject(manifest.interface) ? manifest.interface : undefined;
     if (manifestInterface !== undefined) {
       for (const fieldName of ["websiteURL", "privacyPolicyURL", "termsOfServiceURL"]) {
-        await validateReachableUrl(
-          context,
-          manifestInterface[fieldName],
-          entry.manifestPath,
-          `/interface/${fieldName}`,
+        tasks.push(
+          validateReachableUrl(
+            context,
+            manifestInterface[fieldName],
+            entry.manifestPath,
+            `/interface/${fieldName}`,
+          ),
         );
       }
     }
   }
+
+  await Promise.all(tasks);
 }
 
 export async function validateReachableUrl(

@@ -14,7 +14,9 @@ export async function validateSkillFrontmatter(
   skillFilePath: string,
 ): Promise<void> {
   const content = await readFile(skillFilePath, "utf8");
-  const frontmatter = content.match(/^---\n(?<yaml>[\s\S]*?)\n---\n(?<body>[\s\S]*)$/);
+  const frontmatter = content.match(
+    /^---\r?\n(?<yaml>[\s\S]*?)\r?\n---(?:\r?\n(?<body>[\s\S]*))?$/,
+  );
 
   if (frontmatter?.groups?.yaml === undefined) {
     error(context, "agentskills/frontmatter", skillFilePath, "Missing YAML frontmatter.");

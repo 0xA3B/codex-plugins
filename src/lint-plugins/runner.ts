@@ -41,14 +41,18 @@ export async function lintPlugins(options: ValidationOptions = {}): Promise<Lint
   return { catalog, context, errorCount, warningCount };
 }
 
-export async function runLintPlugins(): Promise<void> {
-  const { catalog, context, errorCount, warningCount } = await lintPlugins();
+export async function runLintPlugins(options: ValidationOptions = {}): Promise<void> {
+  const { catalog, context, errorCount, warningCount } = await lintPlugins(options);
   if (context.diagnostics.length > 0) {
     const status = errorCount > 0 ? "failed" : "completed";
-    console.error(
-      `Plugin lint ${status} with ${errorCount} error(s) and ${warningCount} warning(s):`,
-    );
-    printDiagnostics(context);
+    const summary = `Plugin lint ${status} with ${errorCount} error(s) and ${warningCount} warning(s):`;
+    if (errorCount > 0) {
+      console.error(summary);
+      printDiagnostics(context, console.error);
+    } else {
+      console.log(summary);
+      printDiagnostics(context, console.log);
+    }
     process.exitCode = errorCount > 0 ? 1 : 0;
     return;
   }
@@ -57,8 +61,8 @@ export async function runLintPlugins(): Promise<void> {
   console.log(`Linted ${catalog.localEntries.size} local plugin(s)${externalLabel}.`);
 }
 
-export function runCli(): void {
-  runLintPlugins().catch((caught: unknown) => {
+export function runCli(options: ValidationOptions = {}): void {
+  runLintPlugins(options).catch((caught: unknown) => {
     console.error(errorMessage(caught));
     process.exitCode = 1;
   });

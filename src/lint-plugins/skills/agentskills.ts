@@ -8,6 +8,10 @@ import { getOptionalString, getString, isObject } from "../schema.js";
 import { AGENT_SKILL_FRONTMATTER_KEYS } from "../specs.js";
 import { errorMessage } from "../utils.js";
 
+const MAX_RECOMMENDED_BODY_LINES = 500;
+const MAX_RECOMMENDED_BODY_TOKENS = 5_000;
+const ESTIMATED_CHARS_PER_TOKEN = 4;
+
 export async function validateSkillFrontmatter(
   context: ValidationContext,
   skillName: string,
@@ -32,6 +36,8 @@ export async function validateSkillFrontmatter(
       "Expected Markdown body content after the YAML frontmatter.",
     );
   }
+
+  validateRecommendedBodySize(context, skillFilePath, body);
 
   let parsed: unknown;
   try {
@@ -191,5 +197,36 @@ export async function validateSkillFrontmatter(
         );
       }
     }
+  }
+}
+
+function validateRecommendedBodySize(
+  context: ValidationContext,
+  skillFilePath: string,
+  body: string,
+): void {
+  const bodyForSize = body.trimEnd();
+  if (bodyForSize.length === 0) {
+    return;
+  }
+
+  const bodyLineCount = bodyForSize.split(/\r\n|\r|\n/).length;
+  if (bodyLineCount > MAX_RECOMMENDED_BODY_LINES) {
+    warning(
+      context,
+      "agentskills/body-lines",
+      skillFilePath,
+      `SKILL.md body should stay under ${MAX_RECOMMENDED_BODY_LINES} lines; move detailed material to references/.`,
+    );
+  }
+
+  const estimatedTokens = Math.ceil(bodyForSize.length / ESTIMATED_CHARS_PER_TOKEN);
+  if (estimatedTokens > MAX_RECOMMENDED_BODY_TOKENS) {
+    warning(
+      context,
+      "agentskills/body-tokens",
+      skillFilePath,
+      `SKILL.md body should stay under approximately ${MAX_RECOMMENDED_BODY_TOKENS} tokens; estimated ${estimatedTokens} tokens at ${ESTIMATED_CHARS_PER_TOKEN} chars/token.`,
+    );
   }
 }

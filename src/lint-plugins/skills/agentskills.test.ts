@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   createTestContext,
+  diagnosticByRule,
   diagnosticPointers,
   ruleIds,
   validSkillMarkdown,
@@ -88,6 +89,88 @@ describe("Agent Skills frontmatter validation", () => {
       await validateSkillFrontmatter(context, "manual", skillPath);
 
       expect(ruleIds(context)).toEqual(["repo/unsupported-skill-key"]);
+    });
+  });
+
+  it("reports frontmatter character limits from the official spec", async () => {
+    await withTempRepo(async (repoRoot) => {
+      const longName = `a${"a".repeat(64)}`;
+      const skillPath = await writeText(
+        repoRoot,
+        `skills/${longName}/SKILL.md`,
+        validSkillMarkdown({
+          body: "# Limits",
+          frontmatter: {
+            compatibility: "c".repeat(501),
+            description: "d".repeat(1025),
+            name: longName,
+          },
+        }),
+      );
+      const context = createTestContext(repoRoot);
+
+      await validateSkillFrontmatter(context, longName, skillPath);
+
+      expect(ruleIds(context)).toEqual(
+        expect.arrayContaining([
+          "agentskills/name-format",
+          "agentskills/description-length",
+          "agentskills/compatibility-length",
+        ]),
+      );
+      expect(diagnosticByRule(context, "agentskills/name-format")?.severity).toBe("error");
+      expect(diagnosticByRule(context, "agentskills/description-length")?.severity).toBe("error");
+      expect(diagnosticByRule(context, "agentskills/compatibility-length")?.severity).toBe("error");
+    });
+  });
+
+  it("warns when SKILL.md body exceeds recommended progressive-disclosure size", async () => {
+    await withTempRepo(async (repoRoot) => {
+      const body = Array.from({ length: 501 }, (_, index) => `${index}. ${"x".repeat(40)}`).join(
+        "\n",
+      );
+      const skillPath = await writeText(
+        repoRoot,
+        "skills/large/SKILL.md",
+        validSkillMarkdown({
+          body,
+          frontmatter: {
+            description: "Use when a test needs an oversized body fixture.",
+            name: "large",
+          },
+        }),
+      );
+      const context = createTestContext(repoRoot);
+
+      await validateSkillFrontmatter(context, "large", skillPath);
+
+      expect(ruleIds(context)).toEqual(["agentskills/body-lines", "agentskills/body-tokens"]);
+      expect(diagnosticByRule(context, "agentskills/body-lines")?.severity).toBe("warning");
+      expect(diagnosticByRule(context, "agentskills/body-tokens")?.severity).toBe("warning");
+    });
+  });
+
+  it("does not warn at the recommended SKILL.md body limits", async () => {
+    await withTempRepo(async (repoRoot) => {
+      const body = Array.from({ length: 500 }, (_, index) => `${index}. ${"x".repeat(30)}`).join(
+        "\n",
+      );
+      const skillPath = await writeText(
+        repoRoot,
+        "skills/limit/SKILL.md",
+        validSkillMarkdown({
+          body,
+          frontmatter: {
+            description: "Use when a test needs a body at the recommended limit.",
+            name: "limit",
+          },
+        }),
+      );
+      const context = createTestContext(repoRoot);
+
+      await validateSkillFrontmatter(context, "limit", skillPath);
+
+      expect(context.diagnostics).toEqual([]);
     });
   });
 });

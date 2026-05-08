@@ -22,7 +22,8 @@ of personal skills.
 - `pnpm format`: Use oxfmt to format all supported filetypes in the repo
 - `pnpm format:check`: Use oxfmt to check all supported filetypes in the repo
 - `pnpm lint`: Use Oxlint to lint TypeScript
-- `pnpm typecheck`: Use TypeScript to typecheck scripts
+- `pnpm typecheck`: Use TypeScript to typecheck validation tooling
+- `pnpm test`: Run the Vitest suite
 - `pnpm lint:plugins`: Lint the Codex marketplace, plugin manifests, and skill metadata
 - `pnpm lint:plugins:external`: Run plugin linting with opt-in network checks for external URLs and
   repositories

@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm lint:plugins",
+    "eval:trigger": "tsx src/trigger-evals/cli.ts",
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
     "lint": "oxlint --deny-warnings",

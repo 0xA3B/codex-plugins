@@ -97,7 +97,17 @@ async function buildEvalConfig(
 }
 
 async function readTopLevelConfigLines(configPath: string): Promise<string[]> {
-  const content = await readFile(configPath, "utf8");
+  let content: string;
+  try {
+    content = await readFile(configPath, "utf8");
+  } catch (caught: unknown) {
+    if (isNodeError(caught) && caught.code === "ENOENT") {
+      return [];
+    }
+
+    throw caught;
+  }
+
   const lines: string[] = [];
 
   for (const line of content.split(/\r?\n/)) {
@@ -123,4 +133,12 @@ function tomlString(value: string): string {
 
 function errorMessage(caught: unknown): string {
   return caught instanceof Error ? caught.message : String(caught);
+}
+
+function isNodeError(value: unknown): value is Error & { code: string } {
+  return (
+    value instanceof Error &&
+    "code" in value &&
+    typeof (value as { code?: unknown }).code === "string"
+  );
 }

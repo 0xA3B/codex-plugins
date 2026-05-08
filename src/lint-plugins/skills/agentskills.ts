@@ -58,6 +58,10 @@ export async function validateSkillFrontmatter(
   }
 
   for (const key of Object.keys(parsed)) {
+    if (key === "disable-model-invocation") {
+      continue;
+    }
+
     if (!AGENT_SKILL_FRONTMATTER_KEYS.has(key)) {
       error(
         context,

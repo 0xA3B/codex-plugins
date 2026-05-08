@@ -87,7 +87,7 @@ describe("Agent Skills frontmatter validation", () => {
 
       await validateSkillFrontmatter(context, "manual", skillPath);
 
-      expect(ruleIds(context)).toContain("repo/unsupported-skill-key");
+      expect(ruleIds(context)).toEqual(["repo/unsupported-skill-key"]);
     });
   });
 });

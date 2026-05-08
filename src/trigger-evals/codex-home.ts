@@ -115,6 +115,9 @@ async function readTopLevelConfigLines(configPath: string): Promise<string[]> {
 }
 
 function tomlString(value: string): string {
+  // TOML basic strings and JSON strings overlap for the path characters produced by os.homedir() and
+  // plugin/marketplace identifiers. JSON.stringify is used as a deliberate simplification; values
+  // containing \b, \f, or non-BMP unicode would need proper TOML escaping.
   return JSON.stringify(value);
 }
 

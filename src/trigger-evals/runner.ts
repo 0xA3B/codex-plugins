@@ -18,6 +18,7 @@ export type RunTriggerEvalOptions = {
   force?: boolean;
   timeoutMs?: number;
   sourceCodexHome?: string;
+  abortSignal?: AbortSignal;
 };
 
 const DEFAULT_TIMEOUT_MS = 120_000;
@@ -26,9 +27,9 @@ export async function runTriggerEval(options: RunTriggerEvalOptions): Promise<Tr
   const repoRoot = path.resolve(options.repoRoot ?? process.cwd());
   const target = resolveSkillTarget(repoRoot, options.skillPath);
   const allowImplicitInvocation = await readAllowImplicitInvocation(target);
-  const runDir = await createRunDir(repoRoot, target.skillName);
 
   if (!allowImplicitInvocation && options.force !== true) {
+    const runDir = await createRunDir(repoRoot, target.skillName);
     const skippedReason = `${target.pluginName}:${target.skillName} has policy.allow_implicit_invocation: false. Trigger optimization is intended for implicitly invokable skills.`;
     const reportPath = path.join(runDir, "report.json");
     const result = { runDir, reportPath, target, results: [], skippedReason };
@@ -41,18 +42,25 @@ export async function runTriggerEval(options: RunTriggerEvalOptions): Promise<Tr
     options.fixturePath ?? target.fixturePath,
     fixtureOptions,
   );
+  const runDir = await createRunDir(repoRoot, target.skillName);
   const harness = await prepareHarness(runDir, target);
-  await prepareCodexHome({
-    codexHome: harness.codexHome,
-    workspacePath: harness.workspacePath,
-    marketplaceName: EVAL_MARKETPLACE_NAME,
-    pluginName: target.pluginName,
-    ...(options.sourceCodexHome === undefined ? {} : { sourceCodexHome: options.sourceCodexHome }),
-  });
 
   const results: TriggerCaseResult[] = [];
   try {
+    await prepareCodexHome({
+      codexHome: harness.codexHome,
+      workspacePath: harness.workspacePath,
+      marketplaceName: EVAL_MARKETPLACE_NAME,
+      pluginName: target.pluginName,
+      ...(options.sourceCodexHome === undefined
+        ? {}
+        : { sourceCodexHome: options.sourceCodexHome }),
+    });
+
     for (const testCase of fixture.cases) {
+      if (options.abortSignal?.aborted === true) {
+        break;
+      }
       const caseDir = path.join(runDir, "cases", testCase.id);
       const codexRunOptions = {
         codexHome: harness.codexHome,
@@ -61,6 +69,7 @@ export async function runTriggerEval(options: RunTriggerEvalOptions): Promise<Tr
         caseDir,
         timeoutMs: options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
         ...(options.model === undefined ? {} : { model: options.model }),
+        ...(options.abortSignal === undefined ? {} : { abortSignal: options.abortSignal }),
       };
       const codexResult = await runCodexExec(codexRunOptions);
 
@@ -111,6 +120,9 @@ function sanitize(value: string): string {
   return value.replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 }
 
+// Relies on Codex CLI emitting a stderr telemetry line containing "codex.skill.injected" and the
+// skill label "<plugin>:<skill>" when a skill's body is injected into the conversation. If the log
+// contract changes this will silently produce false negatives; update alongside Codex releases.
 function detectInvocation(
   codexResult: { stderr: string },
   target: { pluginName: string; skillName: string },

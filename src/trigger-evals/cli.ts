@@ -4,6 +4,14 @@ import { HelpRequested, parseTriggerEvalCliOptions, usage } from "./cli-options.
 import { printTriggerEvalResult } from "./output.js";
 import { runTriggerEval } from "./runner.js";
 
+const abortController = new AbortController();
+const handleSignal = (signal: NodeJS.Signals): void => {
+  process.exitCode = signal === "SIGINT" ? 130 : 143;
+  abortController.abort();
+};
+process.once("SIGINT", handleSignal);
+process.once("SIGTERM", handleSignal);
+
 let options;
 try {
   options = parseTriggerEvalCliOptions(process.argv.slice(2));
@@ -18,7 +26,7 @@ try {
 }
 
 if (options !== undefined) {
-  runTriggerEval(options)
+  runTriggerEval({ ...options, abortSignal: abortController.signal })
     .then((result) => {
       printTriggerEvalResult(result);
     })

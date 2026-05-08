@@ -9,6 +9,7 @@ type CodexRunOptions = {
   caseDir: string;
   timeoutMs: number;
   model?: string;
+  abortSignal?: AbortSignal;
 };
 
 export type CodexRunResult = {
@@ -49,11 +50,12 @@ export async function runCodexExec(options: CodexRunOptions): Promise<CodexRunRe
     args.push("--model", options.model);
   }
 
-  args.push(options.prompt);
+  args.push("--", options.prompt);
 
   const result = await spawnCodex(args, {
     CODEX_HOME: options.codexHome,
     timeoutMs: options.timeoutMs,
+    ...(options.abortSignal === undefined ? {} : { abortSignal: options.abortSignal }),
   });
 
   await writeFile(stdoutPath, result.stdout);
@@ -81,7 +83,7 @@ export async function runCodexExec(options: CodexRunOptions): Promise<CodexRunRe
 
 function spawnCodex(
   args: string[],
-  options: { CODEX_HOME: string; timeoutMs: number },
+  options: { CODEX_HOME: string; timeoutMs: number; abortSignal?: AbortSignal },
 ): Promise<{ exitCode: number | null; stdout: string; stderr: string; error?: string }> {
   return new Promise((resolve) => {
     const child = spawn("codex", args, {
@@ -91,14 +93,28 @@ function spawnCodex(
 
     const stdoutChunks: Buffer[] = [];
     const stderrChunks: Buffer[] = [];
+    let abortError: string | undefined;
     const timeout = setTimeout(() => {
       child.kill("SIGTERM");
     }, options.timeoutMs);
+
+    const onAbort = (): void => {
+      abortError = "codex exec aborted.";
+      child.kill("SIGTERM");
+    };
+    if (options.abortSignal !== undefined) {
+      if (options.abortSignal.aborted) {
+        onAbort();
+      } else {
+        options.abortSignal.addEventListener("abort", onAbort, { once: true });
+      }
+    }
 
     child.stdout.on("data", (chunk: Buffer) => stdoutChunks.push(chunk));
     child.stderr.on("data", (chunk: Buffer) => stderrChunks.push(chunk));
     child.on("error", (caught) => {
       clearTimeout(timeout);
+      options.abortSignal?.removeEventListener("abort", onAbort);
       resolve({
         exitCode: null,
         stdout: Buffer.concat(stdoutChunks).toString("utf8"),
@@ -108,8 +124,10 @@ function spawnCodex(
     });
     child.on("close", (exitCode) => {
       clearTimeout(timeout);
-      const timedOut = exitCode === null;
-      const error = timedOut ? `codex exec timed out after ${options.timeoutMs}ms.` : undefined;
+      options.abortSignal?.removeEventListener("abort", onAbort);
+      const timedOut = exitCode === null && abortError === undefined;
+      const error =
+        abortError ?? (timedOut ? `codex exec timed out after ${options.timeoutMs}ms.` : undefined);
       resolve({
         exitCode,
         stdout: Buffer.concat(stdoutChunks).toString("utf8"),

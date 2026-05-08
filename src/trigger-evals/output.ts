@@ -6,7 +6,6 @@ export function printTriggerEvalResult(result: TriggerEvalResult): void {
   if (result.skippedReason !== undefined) {
     console.warn(`WARNING: ${result.skippedReason}`);
     console.warn(`Report written to ${path.relative(process.cwd(), result.reportPath)}.`);
-    process.exitCode = 1;
     return;
   }
 

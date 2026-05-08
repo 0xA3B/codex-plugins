@@ -1,20 +1,45 @@
+import { parseArgs } from "node:util";
+
 import type { ValidationOptions } from "./diagnostics.js";
 
 export function parseCliOptions(args: readonly string[]): ValidationOptions {
-  let externalValidationEnabled = false;
+  const parsed = parseLintPluginArgs(args);
 
-  for (const arg of args) {
-    if (arg === "--") {
-      continue;
-    }
+  return { externalValidationEnabled: parsed.values.external === true };
+}
 
-    if (arg === "--external") {
-      externalValidationEnabled = true;
-      continue;
-    }
+function parseLintPluginArgs(args: readonly string[]) {
+  try {
+    return parseArgs({
+      args: args.filter((arg) => arg !== "--"),
+      options: {
+        external: { type: "boolean" },
+      },
+    });
+  } catch (caught: unknown) {
+    throw normalizeParseArgsError(caught);
+  }
+}
 
-    throw new Error(`Unknown option: ${arg}`);
+function normalizeParseArgsError(caught: unknown): Error {
+  if (!isParseArgsError(caught)) {
+    return caught instanceof Error ? caught : new Error(String(caught));
   }
 
-  return { externalValidationEnabled };
+  if (caught.code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
+    const optionName = caught.message.match(/^Unknown option '([^']+)'/)?.[1];
+    if (optionName !== undefined) {
+      return new Error(`Unknown option: ${optionName}`);
+    }
+  }
+
+  return caught;
+}
+
+function isParseArgsError(value: unknown): value is Error & { code: string } {
+  return (
+    value instanceof Error &&
+    "code" in value &&
+    typeof (value as { code?: unknown }).code === "string"
+  );
 }

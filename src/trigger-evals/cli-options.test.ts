@@ -46,6 +46,9 @@ describe("parseTriggerEvalCliOptions", () => {
     expect(() => parseTriggerEvalCliOptions(["plugins/foo/skills/bar", "--fixture"])).toThrow(
       "Missing value for --fixture.",
     );
+    expect(() => parseTriggerEvalCliOptions(["plugins/foo/skills/bar", "--fixture="])).toThrow(
+      "Missing value for --fixture.",
+    );
   });
 
   it("rejects non-positive timeouts", () => {

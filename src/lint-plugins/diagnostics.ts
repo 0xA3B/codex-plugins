@@ -14,11 +14,17 @@ export type ValidationContext = {
   repoRoot: string;
 };
 
-export function createValidationContext(): ValidationContext {
+export type ValidationOptions = {
+  externalValidationEnabled?: boolean;
+  repoRoot?: string;
+};
+
+export function createValidationContext(options: ValidationOptions = {}): ValidationContext {
   return {
     diagnostics: [],
-    externalValidationEnabled: process.argv.includes("--external"),
-    repoRoot: process.cwd(),
+    externalValidationEnabled:
+      options.externalValidationEnabled ?? process.argv.includes("--external"),
+    repoRoot: options.repoRoot ?? process.cwd(),
   };
 }
 

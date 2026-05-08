@@ -2,7 +2,7 @@
   "name": "codex-plugins",
   "private": true,
   "scripts": {
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm lint:plugins",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm lint:plugins",
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
     "lint": "oxlint --deny-warnings",
@@ -11,6 +11,7 @@
     "lint:plugins": "tsx src/lint-plugins/cli.ts",
     "lint:plugins:external": "tsx src/lint-plugins/cli.ts --external",
     "prepare": "husky",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
@@ -23,6 +24,7 @@
     "oxlint": "^1.62.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
+    "vitest": "^4.1.5",
     "yaml": "^2.8.3"
   },
   "lint-staged": {

@@ -1,15 +1,23 @@
 import { validateCatalogCoverage, validateLocalRepositoryAlignment } from "./coverage.js";
 import { createValidationContext } from "./diagnostics.js";
+import type { ValidationContext, ValidationOptions } from "./diagnostics.js";
 import { validateExternalReferences } from "./external.js";
 import { validateMarketplace } from "./marketplace.js";
 import { printDiagnostics } from "./output.js";
 import { validatePlugin } from "./plugin-manifest.js";
 import { validateSkillsForEntry } from "./skills/index.js";
-import type { JsonObject } from "./types.js";
+import type { Catalog, JsonObject } from "./types.js";
 import { errorMessage } from "./utils.js";
 
-export async function runLintPlugins(): Promise<void> {
-  const context = createValidationContext();
+export type LintResult = {
+  catalog: Catalog;
+  context: ValidationContext;
+  errorCount: number;
+  warningCount: number;
+};
+
+export async function lintPlugins(options: ValidationOptions = {}): Promise<LintResult> {
+  const context = createValidationContext(options);
   const catalog = await validateMarketplace(context);
   const manifestsByPath = new Map<string, JsonObject>();
   validateLocalRepositoryAlignment(context, catalog);
@@ -29,6 +37,12 @@ export async function runLintPlugins(): Promise<void> {
     (diagnostic) => diagnostic.severity === "error",
   ).length;
   const warningCount = context.diagnostics.length - errorCount;
+
+  return { catalog, context, errorCount, warningCount };
+}
+
+export async function runLintPlugins(): Promise<void> {
+  const { catalog, context, errorCount, warningCount } = await lintPlugins();
   if (context.diagnostics.length > 0) {
     const status = errorCount > 0 ? "failed" : "completed";
     console.error(

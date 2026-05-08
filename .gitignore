@@ -290,6 +290,9 @@ web_modules/
 .env.*
 !.env.example
 
+# Local skill trigger-eval runs may contain copied Codex auth/config and raw model output.
+.local/skill-evals/
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

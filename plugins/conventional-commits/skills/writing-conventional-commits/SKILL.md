@@ -3,7 +3,8 @@ name: writing-conventional-commits
 description:
   Defines Conventional Commits 1.0.0 plus a reusable commit profile. Use when drafting commit
   messages, splitting changes into logical commits, or validating type/scope/breaking-change syntax
-  in any repository.
+  in any repository. Do not use for conceptual questions unless the user asks to draft, split, or
+  validate a commit message.
 ---
 
 # Writing Conventional Commits

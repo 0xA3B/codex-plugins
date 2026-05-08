@@ -1,0 +1,7 @@
+version: 1
+interface:
+  display_name: "Optimize Trigger"
+  short_description: "Optimize skill invocation"
+  default_prompt: "Use $optimize-trigger to optimize automatic invocation for a plugin skill."
+policy:
+  allow_implicit_invocation: false

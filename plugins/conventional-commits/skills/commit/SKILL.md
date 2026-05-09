@@ -4,6 +4,7 @@ description:
   Reviews current git changes, splits them into logical Conventional Commits, and executes them with
   minimal interaction. Use when the user asks to commit current work, batch commits, or run a fast
   commit workflow.
+license: MIT
 ---
 
 # Commit

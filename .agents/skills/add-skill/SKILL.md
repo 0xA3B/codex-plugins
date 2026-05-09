@@ -4,6 +4,7 @@ description:
   Adds a new skill to an existing Codex marketplace plugin in this repository. Use when the user
   asks to add another skill, workflow, or reusable capability under an existing plugin; pair with
   the built-in skill-creator guidance for general skill authoring.
+license: MIT
 ---
 
 # Add Skill

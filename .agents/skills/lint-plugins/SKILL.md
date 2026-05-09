@@ -4,6 +4,7 @@ description:
   Lints Codex marketplace plugin structure, manifests, skill metadata, formatting, linting, and type
   checks in this repository. Use when the user asks to check a plugin, verify metadata, run plugin
   linting, or confirm plugin changes are ready.
+license: MIT
 ---
 
 # Lint Plugins

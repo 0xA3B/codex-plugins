@@ -5,6 +5,7 @@ description:
   messages, splitting changes into logical commits, or validating type/scope/breaking-change syntax
   in any repository. Do not use for conceptual questions unless the user asks to draft, split, or
   validate a commit message.
+license: MIT
 ---
 
 # Writing Conventional Commits

@@ -69,6 +69,9 @@ When maintaining the glossary:
 | **Eval artifact**       | Generated trigger-eval output under `.local/skill-evals/`, not committed project state.                             | fixture                   |
 | **Plugin linter**       | The local validator behind `pnpm lint:plugins`, covering marketplace, manifest, skill, and metadata consistency.    | validator                 |
 | **External validation** | Opt-in network or remote URL checks run separately from default local plugin linting.                               | normal linting            |
+| **Brainstorm**          | A read-only exploration workflow that researches and compares solution directions before planning.                  | idea list                 |
+| **Plan**                | A convergence workflow that turns a chosen direction into an implementation-ready plan.                             | grill-me                  |
+| **TDD**                 | The implementation workflow that delivers behavior through red-green-refactor cycles.                               | testing phase             |
 | **Diagnostic**          | A structured plugin-linter finding with a code, file, message, and pointer.                                         | error string              |
 | **Validation context**  | The shared lint-run state passed through plugin-linter checks instead of module-level mutable globals.              | globals                   |
 | **Metadata surface**    | Any file that exposes plugin or skill metadata and must stay aligned with adjacent surfaces.                        | docs                      |
@@ -82,6 +85,8 @@ Relationships:
 - A **Marketplace entry** points to one **Plugin**.
 - A **Plugin** owns one **Plugin manifest** and zero or more **Plugin skills**.
 - A **Plugin skill** owns one **Skill body** and one **Codex UI metadata** file.
+- **Brainstorm** can hand off a preferred direction to **Plan**; **Plan** can hand off an
+  implementation-ready plan to **TDD**.
 - A **Trigger eval** runs **Trigger fixtures** against one implicitly invokable **Plugin skill**.
 - **Eval artifacts** are generated under `.local/` and should not be committed.
 - **Plugin linter** checks are local and deterministic by default; **External validation** is

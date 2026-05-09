@@ -1,16 +1,16 @@
 ---
-name: grill-me
+name: plan
 description: >-
   Interview the user about a plan or design until the important decisions, dependencies, and edge
-  cases are clear. Use when the user explicitly asks to be grilled, wants a plan stress-tested, or
-  wants help resolving an ambiguous design before implementation.
+  cases are clear. Use when the user asks to plan work, stress-test an approach, turn a brainstormed
+  direction into an implementation-ready plan, or resolve an ambiguous design before implementation.
 license: MIT
 metadata:
   original_author: Matt Pocock
   original_source: https://github.com/mattpocock/skills/tree/b843cb5ea74b1fe5e58a0fc23cddef9e66076fb8/skills/productivity/grill-me
 ---
 
-# Grill Me
+# Plan
 
 Interview the user about the plan until there is a shared understanding of the shape of the work.
 Walk the decision tree one branch at a time, resolving dependencies before moving deeper.
@@ -41,7 +41,7 @@ the decisions that materially affect implementation, risk, scope, product behavi
 
 ## Output
 
-When the grilling session is complete, summarize:
+When the planning session is complete, summarize:
 
 - The decisions that were made.
 - Glossary terms added, changed, or intentionally deferred.

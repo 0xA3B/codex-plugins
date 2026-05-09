@@ -97,7 +97,7 @@ Ask which candidate they want to explore or implement.
 
 ### 3. Grill The Selected Candidate
 
-Once the user picks a candidate, run a focused grilling loop:
+Once the user picks a candidate, run a focused planning loop:
 
 - What exact behavior belongs behind the new or deepened interface?
 - Which callers should know less after the change?

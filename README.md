@@ -43,8 +43,6 @@ preserved in each skill's Agent Skills frontmatter metadata.
   performance regressions.
 - `engineering-workflows:tdd`: Builds features or fixes with a red-green-refactor loop.
 - `engineering-workflows:grill-me`: Stress-tests a plan or design through focused questions.
-- `engineering-workflows:grill-with-docs`: Stress-tests a plan while preserving durable domain terms
-  and ADRs.
 - `engineering-workflows:zoom-out`: Maps an unfamiliar code area at a higher level of abstraction.
 - `engineering-workflows:improve-codebase-architecture`: Finds module deepening and architecture
   improvement opportunities.

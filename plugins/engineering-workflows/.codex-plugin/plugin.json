@@ -22,7 +22,6 @@
       "Use $engineering-workflows:diagnose to diagnose this bug.",
       "Use $engineering-workflows:tdd to implement this with a red-green-refactor loop.",
       "Use $engineering-workflows:grill-me to stress-test this plan.",
-      "Use $engineering-workflows:grill-with-docs to stress-test this plan and update durable project docs.",
       "Use $engineering-workflows:zoom-out to explain how this code area fits into the larger system.",
       "Use $engineering-workflows:improve-codebase-architecture to find architecture deepening opportunities."
     ]

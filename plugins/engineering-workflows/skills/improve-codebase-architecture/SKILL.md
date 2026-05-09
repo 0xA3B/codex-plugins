@@ -1,9 +1,9 @@
 ---
 name: improve-codebase-architecture
 description: >-
-  Find architectural deepening opportunities in a codebase, informed by domain language and ADRs.
-  Use when the user wants refactoring opportunities, better module design, simpler interfaces,
-  stronger testability, or a codebase architecture review.
+  Find architectural deepening opportunities in a codebase, informed by the project's domain
+  language. Use when the user wants refactoring opportunities, better module design, simpler
+  interfaces, stronger testability, or a codebase architecture review.
 license: MIT
 metadata:
   original_author: Matt Pocock
@@ -60,11 +60,10 @@ Key principles:
 
 ### 1. Explore
 
-Read the project's domain glossary and relevant ADRs first when they exist:
+Read the project's domain language first when these sources exist:
 
-- `CONTEXT.md` or the relevant context from `CONTEXT-MAP.md`
-- `docs/adr/` and context-specific ADR folders
 - `AGENTS.md`, README files, and nearby module docs
+- code names in the area under review
 
 Then inspect the codebase using normal Codex tools. Follow the friction:
 
@@ -74,6 +73,7 @@ Then inspect the codebase using normal Codex tools. Follow the friction:
 - Where do tightly coupled modules leak across seams?
 - Which parts are untested or hard to test through the current interface?
 - Which names in code fail to match the domain language?
+- Which terms are vague, overloaded, or missing from `AGENTS.md ## Glossary`?
 
 Apply the deletion test to suspected shallow modules.
 
@@ -88,9 +88,9 @@ Present a numbered list of deepening opportunities. For each candidate include:
 - **Risks**: migration cost, compatibility issues, or uncertainty.
 - **Evidence**: the concrete code or doc evidence that supports the candidate.
 
-Use the project's domain language from `CONTEXT.md` when available. If an idea conflicts with an
-existing ADR, surface it only when the friction is strong enough to justify revisiting that
-decision.
+Use the project's domain language from `AGENTS.md ## Glossary` when available. If an idea conflicts
+with established glossary language, surface the mismatch and recommend whether to rename the code,
+update the glossary, or defer the terminology decision.
 
 Do not implement the refactor during this first pass unless the user explicitly asked for changes.
 Ask which candidate they want to explore or implement.
@@ -105,11 +105,13 @@ Once the user picks a candidate, run a focused grilling loop:
 - What data, errors, ordering, or configuration are part of the interface?
 - Which compatibility or migration constraints matter?
 
-If new stable domain terms emerge, update `CONTEXT.md` using the same discipline as
-`engineering-workflows:grill-with-docs`.
+If new stable domain terms emerge, update the `## Glossary` section in `AGENTS.md`. Create the
+section if needed. Prefer canonical terms, one-sentence definitions, aliases to avoid, and useful
+relationships between terms. Skip generic programming terms and incidental class, function, or
+module names unless they are part of the domain language.
 
-If the user rejects a candidate for a durable reason, offer to record the reason as an ADR so future
-architecture reviews do not re-suggest it.
+If the user rejects a candidate for a durable reason, include that reason in the review summary so
+future architecture reviews do not re-suggest it without new evidence.
 
 For deeper interface exploration, use [INTERFACE-DESIGN.md](references/INTERFACE-DESIGN.md). For the
 full deepening model, use [DEEPENING.md](references/DEEPENING.md).

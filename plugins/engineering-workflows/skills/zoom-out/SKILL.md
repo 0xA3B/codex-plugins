@@ -31,8 +31,8 @@ make a planning decision.
 
 1. Identify the code area, feature, file, symbol, or behavior the user wants to understand.
 2. Inspect the relevant repository structure, callers, tests, docs, and adjacent modules.
-3. Use the project's own domain language from `CONTEXT.md`, ADRs, `AGENTS.md`, README files, and
-   code names when those sources exist.
+3. Use the project's own domain language from `AGENTS.md`, README files, nearby docs, and code
+   names.
 4. Explain the area as a map:
    - What responsibility this area owns.
    - The main modules and how they relate.

@@ -61,7 +61,7 @@ Each slice should respond to what the previous cycle revealed.
 ### 1. Plan The Test Surface
 
 Before editing, inspect the relevant code, tests, docs, and project commands. Use the project's
-domain language and respect ADRs when they exist.
+domain language from `AGENTS.md`, README files, nearby docs, and code names.
 
 Identify:
 

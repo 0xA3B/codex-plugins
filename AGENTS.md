@@ -70,7 +70,7 @@ When maintaining the glossary:
 | **Plugin linter**       | The local validator behind `pnpm lint:plugins`, covering marketplace, manifest, skill, and metadata consistency.     | validator                 |
 | **External validation** | Opt-in network or remote URL checks run separately from default local plugin linting.                                | normal linting            |
 | **Brainstorm**          | A read-only exploration workflow that researches and compares solution directions before planning.                   | idea list                 |
-| **Plan**                | A convergence workflow that turns a chosen direction into an implementation-ready plan.                              | grill-me                  |
+| **Plan**                | A convergence workflow that turns a chosen direction into an implementation-ready plan.                              |                           |
 | **Build**               | The implementation workflow that delivers working vertical slices with pragmatic validation while interfaces settle. | prototype                 |
 | **TDD**                 | The implementation workflow that delivers behavior through red-green-refactor cycles.                                | testing phase             |
 | **Diagnostic**          | A structured plugin-linter finding with a code, file, message, and pointer.                                          | error string              |

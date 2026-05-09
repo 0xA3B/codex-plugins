@@ -4,6 +4,7 @@ description: >-
   Evaluate and improve automatic invocation behavior for one repo plugin skill by running committed
   trigger fixtures through an isolated Codex CLI harness. Use when the user asks to optimize, tune,
   or evaluate when a skill is implicitly triggered.
+license: MIT
 ---
 
 # Optimize Trigger

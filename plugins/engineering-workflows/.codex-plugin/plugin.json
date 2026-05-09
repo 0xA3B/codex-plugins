@@ -1,28 +1,29 @@
 {
   "name": "engineering-workflows",
   "version": "1.0.0",
-  "description": "Adapted engineering workflow skills for diagnosis, TDD, planning interviews, architecture review, and codebase orientation.",
+  "description": "Engineering workflow skills for brainstorming, planning, building, TDD, diagnosis, architecture review, and codebase orientation.",
   "author": {
     "name": "Alex Baker"
   },
   "homepage": "https://github.com/0xA3B/codex-plugins/blob/main/plugins/engineering-workflows/README.md",
   "repository": "https://github.com/0xA3B/codex-plugins",
-  "keywords": ["engineering", "debugging", "tdd", "architecture", "planning"],
+  "keywords": ["engineering", "debugging", "build", "tdd", "architecture", "planning"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Engineering Workflows",
-    "shortDescription": "Diagnose, test, plan, and review codebases.",
-    "longDescription": "Codex-adapted workflow skills for disciplined debugging, test-driven development, planning interviews, architecture review, and high-level codebase orientation. These skills are adapted from Matt Pocock's MIT-licensed skills repository with per-skill source attribution preserved in Agent Skills frontmatter metadata.",
+    "shortDescription": "Brainstorm, plan, build, diagnose, test, and review codebases.",
+    "longDescription": "Workflow skills for evidence-backed brainstorming, implementation planning, pragmatic building, disciplined debugging, test-driven development, architecture review, and high-level codebase orientation. Adapted skills preserve source attribution in Agent Skills frontmatter metadata.",
     "developerName": "Alex Baker",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
     "composerIcon": "./assets/logo.png",
     "logo": "./assets/logo.png",
     "defaultPrompt": [
-      "Use $engineering-workflows:diagnose to diagnose this bug.",
+      "Use $engineering-workflows:brainstorm to research options for this problem.",
+      "Use $engineering-workflows:plan to turn this direction into an implementation-ready plan.",
+      "Use $engineering-workflows:build to implement this with pragmatic validation.",
       "Use $engineering-workflows:tdd to implement this with a red-green-refactor loop.",
-      "Use $engineering-workflows:grill-me to stress-test this plan.",
-      "Use $engineering-workflows:grill-with-docs to stress-test this plan and update durable project docs.",
+      "Use $engineering-workflows:diagnose to diagnose this bug.",
       "Use $engineering-workflows:zoom-out to explain how this code area fits into the larger system.",
       "Use $engineering-workflows:improve-codebase-architecture to find architecture deepening opportunities."
     ]

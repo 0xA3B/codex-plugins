@@ -4,6 +4,7 @@ description:
   Drafts Conventional Commit message text for provided or current changes without staging or
   committing. Use when the user asks for a commit message, wants to review a message before
   committing, or needs Conventional Commit wording only.
+license: MIT
 ---
 
 # Draft Message

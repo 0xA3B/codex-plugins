@@ -34,17 +34,22 @@ Skills for planning, writing, validating, and executing Conventional Commits.
 
 ### `engineering-workflows`
 
-Codex-adapted engineering workflow skills for diagnosis, TDD, planning interviews, architecture
-review, and codebase orientation. These are adapted from Matt Pocock's MIT-licensed
+Engineering workflow skills for brainstorming, planning, building, TDD, diagnosis, architecture
+review, and codebase orientation. Some skills are adapted from Matt Pocock's MIT-licensed
 [`mattpocock/skills`](https://github.com/mattpocock/skills) repository with source attribution
-preserved in each skill's Agent Skills frontmatter metadata.
+preserved in each adapted skill's Agent Skills frontmatter metadata.
 
+Typical implementation flow: `brainstorm` when solution direction is unclear, `plan` once a
+direction is selected, then `build` for greenfield or high-churn implementation and `tdd` for stable
+behavior. `diagnose`, `zoom-out`, and `improve-codebase-architecture` are ad hoc workflows for
+specific needs.
+
+- `engineering-workflows:brainstorm`: Researches and compares solution options before planning.
+- `engineering-workflows:build`: Implements working slices with pragmatic validation.
 - `engineering-workflows:diagnose`: Runs a disciplined diagnosis loop for bugs, flaky behavior, and
   performance regressions.
 - `engineering-workflows:tdd`: Builds features or fixes with a red-green-refactor loop.
-- `engineering-workflows:grill-me`: Stress-tests a plan or design through focused questions.
-- `engineering-workflows:grill-with-docs`: Stress-tests a plan while preserving durable domain terms
-  and ADRs.
+- `engineering-workflows:plan`: Turns a direction into an implementation-ready plan.
 - `engineering-workflows:zoom-out`: Maps an unfamiliar code area at a higher level of abstraction.
 - `engineering-workflows:improve-codebase-architecture`: Finds module deepening and architecture
   improvement opportunities.

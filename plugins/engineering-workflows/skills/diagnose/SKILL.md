@@ -14,8 +14,9 @@ metadata:
 
 Use a disciplined loop for hard bugs. Skip phases only when explicitly justified by evidence.
 
-When exploring the codebase, read the project's domain glossary and relevant ADRs when they exist.
-Use project-specific test, lint, run, and reproduction workflows over generic commands.
+When exploring the codebase, use the project's domain language from `AGENTS.md`, README files,
+nearby docs, and code names. Use project-specific test, lint, run, and reproduction workflows over
+generic commands.
 
 ## Success Criteria
 

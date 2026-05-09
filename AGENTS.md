@@ -49,34 +49,35 @@ When maintaining the glossary:
 - Skip generic programming terms and incidental class, function, or module names unless they are
   part of the domain language.
 
-| Term                    | Definition                                                                                                          | Aliases to Avoid          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Marketplace**         | The installable Codex plugin source published by this repository.                                                   | plugin repo, package      |
-| **Marketplace catalog** | `.agents/plugins/marketplace.json`, the root list of plugins exposed by the marketplace.                            | manifest, registry        |
-| **Plugin**              | A distributable bundle under `plugins/<plugin-name>/` with a `.codex-plugin/plugin.json` manifest.                  | skill pack                |
-| **Plugin manifest**     | `.codex-plugin/plugin.json`, the plugin-level metadata consumed by Codex.                                           | marketplace entry         |
-| **Marketplace entry**   | One plugin listing inside `.agents/plugins/marketplace.json`.                                                       | plugin manifest           |
-| **Plugin skill**        | A shipped skill under `plugins/<plugin>/skills/<skill>/`.                                                           | repo-local skill          |
-| **Repo-local skill**    | A maintenance workflow under `.agents/skills/` used only while working in this checkout.                            | plugin skill              |
-| **Skill body**          | `SKILL.md`, the runtime instructions and frontmatter for a skill.                                                   | metadata, prompt metadata |
-| **Codex UI metadata**   | `agents/openai.yaml`, the skill-level display metadata and invocation policy for Codex.                             | skill frontmatter         |
-| **Invocation policy**   | The `policy.allow_implicit_invocation` setting that decides whether Codex may load a skill automatically.           | trigger policy            |
-| **Manual-only skill**   | A skill with `allow_implicit_invocation: false`; it should be invoked explicitly by the user.                       | disabled skill            |
-| **Implicit invocation** | Codex automatically injecting a skill because the user prompt matches the skill description.                        | auto-trigger              |
-| **Trigger fixture**     | A committed YAML file of positive and negative cases used to evaluate implicit invocation behavior.                 | skill test                |
-| **Trigger eval**        | A development-only run that checks whether one skill invokes or skips for each trigger fixture case.                | validation gate           |
-| **Invocation signal**   | The observed evidence that Codex injected the target skill, currently stderr telemetry with `codex.skill.injected`. | canary                    |
-| **Eval artifact**       | Generated trigger-eval output under `.local/skill-evals/`, not committed project state.                             | fixture                   |
-| **Plugin linter**       | The local validator behind `pnpm lint:plugins`, covering marketplace, manifest, skill, and metadata consistency.    | validator                 |
-| **External validation** | Opt-in network or remote URL checks run separately from default local plugin linting.                               | normal linting            |
-| **Brainstorm**          | A read-only exploration workflow that researches and compares solution directions before planning.                  | idea list                 |
-| **Plan**                | A convergence workflow that turns a chosen direction into an implementation-ready plan.                             | grill-me                  |
-| **TDD**                 | The implementation workflow that delivers behavior through red-green-refactor cycles.                               | testing phase             |
-| **Diagnostic**          | A structured plugin-linter finding with a code, file, message, and pointer.                                         | error string              |
-| **Validation context**  | The shared lint-run state passed through plugin-linter checks instead of module-level mutable globals.              | globals                   |
-| **Metadata surface**    | Any file that exposes plugin or skill metadata and must stay aligned with adjacent surfaces.                        | docs                      |
-| **Default prompt**      | A suggested prompt shown by Codex for invoking a plugin or skill.                                                   | description               |
-| **Trigger contract**    | The `description` text that defines when a skill should be implicitly invoked.                                      | skill summary             |
+| Term                    | Definition                                                                                                           | Aliases to Avoid          |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **Marketplace**         | The installable Codex plugin source published by this repository.                                                    | plugin repo, package      |
+| **Marketplace catalog** | `.agents/plugins/marketplace.json`, the root list of plugins exposed by the marketplace.                             | manifest, registry        |
+| **Plugin**              | A distributable bundle under `plugins/<plugin-name>/` with a `.codex-plugin/plugin.json` manifest.                   | skill pack                |
+| **Plugin manifest**     | `.codex-plugin/plugin.json`, the plugin-level metadata consumed by Codex.                                            | marketplace entry         |
+| **Marketplace entry**   | One plugin listing inside `.agents/plugins/marketplace.json`.                                                        | plugin manifest           |
+| **Plugin skill**        | A shipped skill under `plugins/<plugin>/skills/<skill>/`.                                                            | repo-local skill          |
+| **Repo-local skill**    | A maintenance workflow under `.agents/skills/` used only while working in this checkout.                             | plugin skill              |
+| **Skill body**          | `SKILL.md`, the runtime instructions and frontmatter for a skill.                                                    | metadata, prompt metadata |
+| **Codex UI metadata**   | `agents/openai.yaml`, the skill-level display metadata and invocation policy for Codex.                              | skill frontmatter         |
+| **Invocation policy**   | The `policy.allow_implicit_invocation` setting that decides whether Codex may load a skill automatically.            | trigger policy            |
+| **Manual-only skill**   | A skill with `allow_implicit_invocation: false`; it should be invoked explicitly by the user.                        | disabled skill            |
+| **Implicit invocation** | Codex automatically injecting a skill because the user prompt matches the skill description.                         | auto-trigger              |
+| **Trigger fixture**     | A committed YAML file of positive and negative cases used to evaluate implicit invocation behavior.                  | skill test                |
+| **Trigger eval**        | A development-only run that checks whether one skill invokes or skips for each trigger fixture case.                 | validation gate           |
+| **Invocation signal**   | The observed evidence that Codex injected the target skill, currently stderr telemetry with `codex.skill.injected`.  | canary                    |
+| **Eval artifact**       | Generated trigger-eval output under `.local/skill-evals/`, not committed project state.                              | fixture                   |
+| **Plugin linter**       | The local validator behind `pnpm lint:plugins`, covering marketplace, manifest, skill, and metadata consistency.     | validator                 |
+| **External validation** | Opt-in network or remote URL checks run separately from default local plugin linting.                                | normal linting            |
+| **Brainstorm**          | A read-only exploration workflow that researches and compares solution directions before planning.                   | idea list                 |
+| **Plan**                | A convergence workflow that turns a chosen direction into an implementation-ready plan.                              | grill-me                  |
+| **Build**               | The implementation workflow that delivers working vertical slices with pragmatic validation while interfaces settle. | prototype                 |
+| **TDD**                 | The implementation workflow that delivers behavior through red-green-refactor cycles.                                | testing phase             |
+| **Diagnostic**          | A structured plugin-linter finding with a code, file, message, and pointer.                                          | error string              |
+| **Validation context**  | The shared lint-run state passed through plugin-linter checks instead of module-level mutable globals.               | globals                   |
+| **Metadata surface**    | Any file that exposes plugin or skill metadata and must stay aligned with adjacent surfaces.                         | docs                      |
+| **Default prompt**      | A suggested prompt shown by Codex for invoking a plugin or skill.                                                    | description               |
+| **Trigger contract**    | The `description` text that defines when a skill should be implicitly invoked.                                       | skill summary             |
 
 Relationships:
 
@@ -86,7 +87,7 @@ Relationships:
 - A **Plugin** owns one **Plugin manifest** and zero or more **Plugin skills**.
 - A **Plugin skill** owns one **Skill body** and one **Codex UI metadata** file.
 - **Brainstorm** can hand off a preferred direction to **Plan**; **Plan** can hand off an
-  implementation-ready plan to **TDD**.
+  implementation-ready plan to **Build** or **TDD**.
 - A **Trigger eval** runs **Trigger fixtures** against one implicitly invokable **Plugin skill**.
 - **Eval artifacts** are generated under `.local/` and should not be committed.
 - **Plugin linter** checks are local and deterministic by default; **External validation** is

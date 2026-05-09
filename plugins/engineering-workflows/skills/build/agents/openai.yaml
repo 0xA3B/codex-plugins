@@ -1,0 +1,7 @@
+version: 1
+interface:
+  display_name: "Build"
+  short_description: "Implement with pragmatic validation"
+  default_prompt: "Use $engineering-workflows:build to implement this with pragmatic validation."
+policy:
+  allow_implicit_invocation: false

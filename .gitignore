@@ -9,6 +9,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+!plugins/engineering-workflows/skills/build/
+!plugins/engineering-workflows/skills/build/**
 develop-eggs/
 dist/
 downloads/

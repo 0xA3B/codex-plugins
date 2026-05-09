@@ -1,11 +1,12 @@
 # Engineering Workflows
 
-Engineering workflow skills for brainstorming, planning, diagnosis, TDD, architecture review, and
-codebase orientation.
+Engineering workflow skills for brainstorming, planning, building, TDD, diagnosis, architecture
+review, and codebase orientation.
 
 Typical implementation flow: `brainstorm` when solution direction is unclear, `plan` once a
-direction is selected, then `tdd` for implementation. `diagnose`, `zoom-out`, and
-`improve-codebase-architecture` are ad hoc workflows for specific needs.
+direction is selected, then `build` for greenfield or high-churn implementation and `tdd` for stable
+behavior. `diagnose`, `zoom-out`, and `improve-codebase-architecture` are ad hoc workflows for
+specific needs.
 
 Some skills are adapted from Matt Pocock's MIT-licensed
 [`mattpocock/skills`](https://github.com/mattpocock/skills) repository. Adapted skills include Agent
@@ -15,6 +16,7 @@ MIT license notice from the source repository is preserved in [LICENSE](./LICENS
 ## Skills
 
 - `engineering-workflows:brainstorm`: Research and compare solution options before planning.
+- `engineering-workflows:build`: Implement working slices with pragmatic validation.
 - `engineering-workflows:diagnose`: Run a disciplined diagnosis loop for bugs, flaky behavior, and
   performance regressions.
 - `engineering-workflows:tdd`: Build features or fixes with a red-green-refactor loop.

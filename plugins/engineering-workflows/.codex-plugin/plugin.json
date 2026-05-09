@@ -1,18 +1,18 @@
 {
   "name": "engineering-workflows",
   "version": "1.0.0",
-  "description": "Engineering workflow skills for brainstorming, planning, diagnosis, TDD, architecture review, and codebase orientation.",
+  "description": "Engineering workflow skills for brainstorming, planning, building, TDD, diagnosis, architecture review, and codebase orientation.",
   "author": {
     "name": "Alex Baker"
   },
   "homepage": "https://github.com/0xA3B/codex-plugins/blob/main/plugins/engineering-workflows/README.md",
   "repository": "https://github.com/0xA3B/codex-plugins",
-  "keywords": ["engineering", "debugging", "tdd", "architecture", "planning"],
+  "keywords": ["engineering", "debugging", "build", "tdd", "architecture", "planning"],
   "skills": "./skills/",
   "interface": {
     "displayName": "Engineering Workflows",
-    "shortDescription": "Brainstorm, plan, diagnose, test, and review codebases.",
-    "longDescription": "Workflow skills for evidence-backed brainstorming, implementation planning, disciplined debugging, test-driven development, architecture review, and high-level codebase orientation. Adapted skills preserve source attribution in Agent Skills frontmatter metadata.",
+    "shortDescription": "Brainstorm, plan, build, diagnose, test, and review codebases.",
+    "longDescription": "Workflow skills for evidence-backed brainstorming, implementation planning, pragmatic building, disciplined debugging, test-driven development, architecture review, and high-level codebase orientation. Adapted skills preserve source attribution in Agent Skills frontmatter metadata.",
     "developerName": "Alex Baker",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
@@ -20,6 +20,7 @@
     "logo": "./assets/logo.png",
     "defaultPrompt": [
       "Use $engineering-workflows:diagnose to diagnose this bug.",
+      "Use $engineering-workflows:build to implement this with pragmatic validation.",
       "Use $engineering-workflows:tdd to implement this with a red-green-refactor loop.",
       "Use $engineering-workflows:brainstorm to research options for this problem.",
       "Use $engineering-workflows:plan to turn this direction into an implementation-ready plan.",

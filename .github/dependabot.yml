@@ -8,9 +8,9 @@ updates:
       time: "09:00"
       timezone: "America/New_York"
     cooldown:
-      semver-major-days: 7
-      semver-minor-days: 3
-      semver-patch-days: 1
+      semver-major-days: 9
+      semver-minor-days: 7
+      semver-patch-days: 3
     open-pull-requests-limit: 5
     versioning-strategy: "increase-if-necessary"
     groups:
@@ -26,6 +26,10 @@ updates:
       day: "friday"
       time: "09:00"
       timezone: "America/New_York"
+    cooldown:
+      semver-major-days: 9
+      semver-minor-days: 7
+      semver-patch-days: 3
     open-pull-requests-limit: 5
     groups:
       github-actions:

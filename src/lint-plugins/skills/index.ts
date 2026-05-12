@@ -14,7 +14,7 @@ export async function validateSkillsForEntry(
   entry: LocalCatalogEntry,
   manifest: JsonObject,
 ): Promise<void> {
-  const skillsReference = typeof manifest.skills === "string" ? manifest.skills : "./skills/";
+  const skillsReference = typeof manifest["skills"] === "string" ? manifest["skills"] : "./skills/";
   const skillsPath = resolveRelativePath(
     context,
     skillsReference,

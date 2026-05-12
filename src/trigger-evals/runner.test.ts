@@ -4,6 +4,8 @@ import path from "node:path";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { CodexRunResult } from "./codex-exec.js";
+
 const mockState = vi.hoisted(() => ({
   codexResults: [] as Array<{
     exitCode: number | null;
@@ -17,7 +19,7 @@ const mockState = vi.hoisted(() => ({
 }));
 
 vi.mock("./codex-exec.js", () => ({
-  runCodexExec: vi.fn(async () => {
+  runCodexExec: vi.fn<() => Promise<CodexRunResult>>(async () => {
     const result = mockState.codexResults.shift();
     if (result === undefined) {
       throw new Error("Missing mocked Codex result.");
@@ -28,8 +30,8 @@ vi.mock("./codex-exec.js", () => ({
 }));
 
 vi.mock("./codex-home.js", () => ({
-  prepareCodexHome: vi.fn(),
-  removeCopiedAuth: vi.fn(),
+  prepareCodexHome: vi.fn<() => Promise<void>>(async () => undefined),
+  removeCopiedAuth: vi.fn<() => Promise<void>>(async () => undefined),
 }));
 
 import { runTriggerEval } from "./runner.js";

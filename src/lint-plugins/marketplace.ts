@@ -38,7 +38,7 @@ export async function validateMarketplace(context: ValidationContext): Promise<C
     );
   }
 
-  const plugins = marketplace.plugins;
+  const plugins = marketplace["plugins"];
   if (!Array.isArray(plugins)) {
     error(
       context,
@@ -87,7 +87,7 @@ export async function validateMarketplace(context: ValidationContext): Promise<C
     }
     seenNames.add(name);
 
-    const source = plugin.source;
+    const source = plugin["source"];
     if (typeof source === "string") {
       const pluginPath = await validateLocalMarketplacePath(
         context,

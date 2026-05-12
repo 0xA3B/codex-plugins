@@ -48,6 +48,7 @@ async function copyRequiredFile(
       `Unable to copy required Codex ${fileName} into the trigger-eval CODEX_HOME: ${errorMessage(
         caught,
       )}`,
+      { cause: caught },
     );
   }
 }

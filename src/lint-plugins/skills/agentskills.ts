@@ -170,7 +170,7 @@ export async function validateSkillFrontmatter(
     );
   }
 
-  const metadata = parsed.metadata;
+  const metadata = parsed["metadata"];
   if (metadata !== undefined) {
     if (!isObject(metadata)) {
       error(

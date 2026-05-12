@@ -36,7 +36,7 @@ export async function validateOpenAiMetadata(
     }
   }
 
-  if (metadata.version !== 1) {
+  if (metadata["version"] !== 1) {
     error(
       context,
       "repo/openai-metadata-version",
@@ -65,7 +65,7 @@ export async function validateOpenAiMetadata(
       metadataPath,
       "/interface/short_description",
     );
-    const defaultPrompt = metadataInterface.default_prompt;
+    const defaultPrompt = metadataInterface["default_prompt"];
     if (typeof defaultPrompt !== "string" || defaultPrompt.length === 0) {
       error(
         context,
@@ -76,17 +76,17 @@ export async function validateOpenAiMetadata(
       );
     }
 
-    validateOpenAiBrandColor(context, metadataInterface.brand_color, metadataPath);
+    validateOpenAiBrandColor(context, metadataInterface["brand_color"], metadataPath);
     await validateOpenAiIconPath(
       context,
-      metadataInterface.icon_small,
+      metadataInterface["icon_small"],
       skillPath,
       metadataPath,
       "/interface/icon_small",
     );
     await validateOpenAiIconPath(
       context,
-      metadataInterface.icon_large,
+      metadataInterface["icon_large"],
       skillPath,
       metadataPath,
       "/interface/icon_large",
@@ -112,7 +112,7 @@ export async function validateOpenAiMetadata(
     );
   }
 
-  await validateOpenAiDependencies(context, metadata.dependencies, metadataPath);
+  await validateOpenAiDependencies(context, metadata["dependencies"], metadataPath);
 
   const frontmatterName = path.basename(path.dirname(path.dirname(metadataPath)));
   if (frontmatterName !== skillName) {
@@ -227,7 +227,7 @@ export async function validateOpenAiDependencies(
     return;
   }
 
-  const tools = value.tools;
+  const tools = value["tools"];
   if (tools === undefined) {
     return;
   }

@@ -21,7 +21,7 @@ export async function validateExternalReferences(
   const tasks: Promise<void>[] = [];
 
   for (const entry of catalog.remoteEntries) {
-    const url = typeof entry.source.url === "string" ? entry.source.url : undefined;
+    const url = typeof entry.source["url"] === "string" ? entry.source["url"] : undefined;
     if (url === undefined) {
       continue;
     }
@@ -31,10 +31,10 @@ export async function validateExternalReferences(
     );
 
     const selector =
-      typeof entry.source.sha === "string"
-        ? entry.source.sha
-        : typeof entry.source.ref === "string"
-          ? entry.source.ref
+      typeof entry.source["sha"] === "string"
+        ? entry.source["sha"]
+        : typeof entry.source["ref"] === "string"
+          ? entry.source["ref"]
           : undefined;
     if (selector !== undefined) {
       tasks.push(
@@ -56,16 +56,16 @@ export async function validateExternalReferences(
     }
 
     tasks.push(
-      validateReachableUrl(context, manifest.repository, entry.manifestPath, "/repository"),
-      validateReachableUrl(context, manifest.homepage, entry.manifestPath, "/homepage"),
+      validateReachableUrl(context, manifest["repository"], entry.manifestPath, "/repository"),
+      validateReachableUrl(context, manifest["homepage"], entry.manifestPath, "/homepage"),
     );
 
-    const author = isObject(manifest.author) ? manifest.author : undefined;
+    const author = isObject(manifest["author"]) ? manifest["author"] : undefined;
     if (author !== undefined) {
-      tasks.push(validateReachableUrl(context, author.url, entry.manifestPath, "/author/url"));
+      tasks.push(validateReachableUrl(context, author["url"], entry.manifestPath, "/author/url"));
     }
 
-    const manifestInterface = isObject(manifest.interface) ? manifest.interface : undefined;
+    const manifestInterface = isObject(manifest["interface"]) ? manifest["interface"] : undefined;
     if (manifestInterface !== undefined) {
       for (const fieldName of ["websiteURL", "privacyPolicyURL", "termsOfServiceURL"]) {
         tasks.push(

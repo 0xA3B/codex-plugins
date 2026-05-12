@@ -8,31 +8,32 @@ of personal skills.
 ## Tech Stack
 
 - Typescript
+- pnpm
 - Oxfmt
 - Oxlint
-- husky
-- commitlint
-- lint-staged
+- Vitest
 
 ## Development Commands
 
-- `pnpm exec -- oxfmt [--write, --check] ...`: Use oxfmt to format/check targeted files
-- `pnpm exec -- oxlint [--fix] ...`: Use oxlint to lint/fix targeted files
 - `pnpm check`: Run format, lint, typecheck, and plugin validation
 - `pnpm format`: Use oxfmt to format all supported filetypes in the repo
 - `pnpm format:check`: Use oxfmt to check all supported filetypes in the repo
 - `pnpm lint`: Use Oxlint to lint TypeScript
-- `pnpm typecheck`: Use TypeScript to typecheck validation tooling
-- `pnpm test`: Run the Vitest suite
 - `pnpm lint:plugins`: Lint the Codex marketplace, plugin manifests, and skill metadata
 - `pnpm lint:plugins:external`: Run plugin linting with opt-in network checks for external URLs and
   repositories
+- `pnpm typecheck`: Use TypeScript to typecheck validation tooling
+- `pnpm test`: Run the Vitest suite
 
 ## Project Conventions
 
 - Commit messages must follow `conventional-commits:writing-conventional-commits`.
 - Commitlint inherits 100-character limits for commit body and footer lines; wrap multi-line commit
   messages before running `git commit`.
+- Keep `README.md` human-facing; put agent-operational guidance in `AGENTS.md`.
+- Keep tests co-located in `src/`.
+- Use `mise exec -- <command>` when reproducing local validation if the active shell runtime does
+  not match `.node-version`.
 
 ## Glossary
 

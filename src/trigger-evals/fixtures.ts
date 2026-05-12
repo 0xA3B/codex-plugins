@@ -32,15 +32,15 @@ function validateFixture(value: unknown, fixturePath: string): TriggerFixture {
     throw new Error(`${fixturePath}: expected fixture root to be an object.`);
   }
 
-  if (value.version !== 1) {
+  if (value["version"] !== 1) {
     throw new Error(`${fixturePath}: expected version: 1.`);
   }
 
-  if (!Array.isArray(value.cases) || value.cases.length === 0) {
+  if (!Array.isArray(value["cases"]) || value["cases"].length === 0) {
     throw new Error(`${fixturePath}: expected cases to be a non-empty list.`);
   }
 
-  const cases = value.cases.map((testCase, index) => validateCase(testCase, fixturePath, index));
+  const cases = value["cases"].map((testCase, index) => validateCase(testCase, fixturePath, index));
   const ids = new Set<string>();
   for (const testCase of cases) {
     if (ids.has(testCase.id)) {
@@ -73,8 +73,8 @@ function validateCase(value: unknown, fixturePath: string, index: number): Trigg
   }
 
   const prompt = readString(value, "prompt", fixturePath, index);
-  const expect = readExpectation(value.expect, fixturePath, index);
-  const rationale = value.rationale;
+  const expect = readExpectation(value["expect"], fixturePath, index);
+  const rationale = value["rationale"];
   if (rationale !== undefined && (typeof rationale !== "string" || rationale.length === 0)) {
     throw new Error(
       `${fixturePath}: expected cases[${index}].rationale to be a non-empty string when provided.`,

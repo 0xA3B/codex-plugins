@@ -24,8 +24,8 @@ export async function validateCatalogCoverage(
     if (!catalogPaths.has(pluginPath)) {
       const manifest = await readJsonObject(context, manifestPath);
       const manifestName =
-        manifest !== undefined && typeof manifest.name === "string"
-          ? manifest.name
+        manifest !== undefined && typeof manifest["name"] === "string"
+          ? manifest["name"]
           : path.basename(pluginPath);
       const nameHint = catalogNames.has(manifestName)
         ? ` Marketplace has "${manifestName}", but it points somewhere else.`

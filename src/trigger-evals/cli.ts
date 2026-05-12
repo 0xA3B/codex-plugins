@@ -12,26 +12,32 @@ const handleSignal = (signal: NodeJS.Signals): void => {
 process.once("SIGINT", handleSignal);
 process.once("SIGTERM", handleSignal);
 
-let options;
-try {
-  options = parseTriggerEvalCliOptions(process.argv.slice(2));
-} catch (caught: unknown) {
-  if (caught instanceof HelpRequested) {
-    console.log(usage());
-    process.exit(0);
+async function main(): Promise<void> {
+  let options;
+  try {
+    options = parseTriggerEvalCliOptions(process.argv.slice(2));
+  } catch (caught: unknown) {
+    if (caught instanceof HelpRequested) {
+      console.log(usage());
+      process.exit(0);
+    }
+
+    console.error(caught instanceof Error ? caught.message : String(caught));
+    process.exitCode = 1;
   }
 
-  console.error(caught instanceof Error ? caught.message : String(caught));
-  process.exitCode = 1;
-}
-
-if (options !== undefined) {
-  runTriggerEval({ ...options, abortSignal: abortController.signal })
-    .then((result) => {
+  if (options !== undefined) {
+    try {
+      const result = await runTriggerEval({
+        ...options,
+        abortSignal: abortController.signal,
+      });
       printTriggerEvalResult(result);
-    })
-    .catch((caught: unknown) => {
+    } catch (caught: unknown) {
       console.error(caught instanceof Error ? caught.message : String(caught));
       process.exitCode = 1;
-    });
+    }
+  }
 }
+
+void main();

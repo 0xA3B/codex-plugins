@@ -75,7 +75,7 @@ export async function validatePlugin(
   }
 
   getOptionalString(context, manifest, "license", entry.manifestPath, "/license");
-  validateStringArray(context, manifest.keywords, "keywords", entry.manifestPath, "/keywords", {
+  validateStringArray(context, manifest["keywords"], "keywords", entry.manifestPath, "/keywords", {
     required: false,
   });
 
@@ -151,7 +151,7 @@ export function validatePluginInterface(
 
   validateStringArray(
     context,
-    manifestInterface.capabilities,
+    manifestInterface["capabilities"],
     "interface.capabilities",
     entry.manifestPath,
     "/interface/capabilities",
@@ -159,7 +159,7 @@ export function validatePluginInterface(
   );
   validateStringArray(
     context,
-    manifestInterface.defaultPrompt,
+    manifestInterface["defaultPrompt"],
     "interface.defaultPrompt",
     entry.manifestPath,
     "/interface/defaultPrompt",
@@ -205,43 +205,43 @@ export async function validateComponentPaths(
       expectedKind: "directory",
       fieldName: "skills",
       pointer: "/skills",
-      value: manifest.skills,
+      value: manifest["skills"],
     },
     {
       expectedKind: "file",
       fieldName: "mcpServers",
       pointer: "/mcpServers",
-      value: manifest.mcpServers,
+      value: manifest["mcpServers"],
     },
     {
       expectedKind: "file",
       fieldName: "apps",
       pointer: "/apps",
-      value: manifest.apps,
+      value: manifest["apps"],
     },
   ];
 
-  const manifestInterface = isObject(manifest.interface) ? manifest.interface : undefined;
+  const manifestInterface = isObject(manifest["interface"]) ? manifest["interface"] : undefined;
   if (manifestInterface !== undefined) {
     pathRules.push(
       {
         expectedKind: "file",
         fieldName: "interface.composerIcon",
         pointer: "/interface/composerIcon",
-        value: manifestInterface.composerIcon,
+        value: manifestInterface["composerIcon"],
       },
       {
         expectedKind: "file",
         fieldName: "interface.logo",
         pointer: "/interface/logo",
-        value: manifestInterface.logo,
+        value: manifestInterface["logo"],
       },
     );
 
-    if (manifestInterface.screenshots !== undefined) {
+    if (manifestInterface["screenshots"] !== undefined) {
       const screenshots = validateStringArray(
         context,
-        manifestInterface.screenshots,
+        manifestInterface["screenshots"],
         "interface.screenshots",
         entry.manifestPath,
         "/interface/screenshots",
@@ -261,7 +261,7 @@ export async function validateComponentPaths(
   }
 
   await validateManifestPathRules(context, pathRules, entry);
-  await validateHooksPath(context, manifest.hooks, entry);
+  await validateHooksPath(context, manifest["hooks"], entry);
 }
 
 export async function validateManifestPathRules(
